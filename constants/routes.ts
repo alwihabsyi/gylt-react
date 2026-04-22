@@ -5,4 +5,6 @@ export const AppRoutes = {
   SignUp: "/(auth)/sign-up" as Href,
 
   Home: "/(tabs)" as Href,
+
+  AddTransaction: "/finance/add-transaction" as Href,
 } as const;

@@ -39,21 +39,39 @@ export const Palette = {
 
 export const Colors = {
   light: {
-    primary: Palette.AppColor,
-    primaryContainer: Palette.Blue400,
-    onPrimary: Palette.Black2,
+    text: Palette.InkDark,
+    background: Palette.Canvas,
+    tint: Palette.BrightGreen,
+    icon: Palette.InkMuted,
+    tabIconDefault: Palette.InkMuted,
+    tabIconSelected: Palette.BrightGreen,
+
+    primary: Palette.BrightGreen,
+    primaryContainer: Palette.EmeraldGreen,
+    onPrimary: Palette.StarkWhite,
+
     secondary: Palette.StarkWhite,
-    secondaryContainer: Palette.Teal300,
+    secondaryContainer: Palette.TealGreen,
+
     error: Palette.RedErrorDark,
     onError: Palette.RedErrorLight,
-    background: Palette.Grey1,
-    onBackground: Palette.Black2,
+    onBackground: Palette.InkDark,
     surface: Palette.SurfaceLight,
     ...Palette,
   },
+
   dark: {
-    primary: Palette.StarkWhite,
+    text: Palette.StarkWhite,
     background: Palette.SurfaceDark,
+    tint: Palette.BrightGreen,
+    icon: Palette.InkMuted,
+    tabIconDefault: Palette.InkMuted,
+    tabIconSelected: Palette.BrightGreen,
+
+    primary: Palette.BrightGreen,
+    primaryContainer: Palette.EmeraldGreen,
+    onPrimary: Palette.StarkWhite,
+    surface: Palette.SurfaceDark,
     ...Palette,
   },
 };

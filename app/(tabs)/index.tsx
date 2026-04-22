@@ -1,230 +1,196 @@
-import AuthBackground from "@/components/layout/auth-background";
-import GradientButton from "@/components/ui/gradient-button";
-import SocialButton from "@/components/ui/social-button";
-import StealthField from "@/components/ui/stealth-field";
-import { AppRoutes } from "@/constants/routes";
-import { Palette } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React from "react";
+import { FlatList, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function SignInScreen() {
-  const router = useRouter();
+import FinanceCard from "@/components/finance/finance-card";
+import { Palette } from "@/constants/theme";
+import { Activity, ActivityType } from "@/types/activity";
+import { Category } from "@/types/category";
+import { getWeekRangeString } from "@/utils/formatter";
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordVisible, setPasswordVisible] = useState(false);
+const dummyActivities: Activity[] = [
+  {
+    name: "Makan kantin",
+    type: ActivityType.Expense,
+    category: Category.Food,
+    amount: 10000.0,
+    createdAt: new Date(),
+  },
+  {
+    name: "Belanja",
+    type: ActivityType.Expense,
+    category: Category.Shopping,
+    amount: 150000.0,
+    createdAt: new Date(),
+  },
+  {
+    name: "Monthly salary",
+    type: ActivityType.Income,
+    category: Category.Bills,
+    amount: 200000.0,
+    createdAt: new Date(),
+  },
+];
+
+export default function HomeScreen() {
+  // This acts like Compose `item { ... }` blocks above the list
+  const ListHeader = () => (
+    <View style={styles.headerContainer}>
+      {/* Hello User */}
+      <View style={styles.greetingSection}>
+        <Text style={styles.helloText}>Hello,</Text>
+        <Text style={styles.userText}>User</Text>
+      </View>
+
+      {/* Summary Card */}
+      <View style={styles.summaryCard}>
+        <View style={styles.summaryHeader}>
+          <Text style={styles.summaryHeaderText}>This Week</Text>
+          <Text style={styles.summaryHeaderText}>{getWeekRangeString()}</Text>
+        </View>
+
+        <View style={styles.summaryBody}>
+          {/* Income Column */}
+          <View style={styles.summaryCol}>
+            <View style={styles.arrowIconWrap}>
+              {/* Rotating standard arrows by 45deg just like your Compose code */}
+              <Ionicons
+                name="arrow-down-outline"
+                size={16}
+                color={Palette.EmeraldGreen}
+                style={{ transform: [{ rotate: "45deg" }] }}
+              />
+            </View>
+            <Text style={styles.summaryLabel}>Income</Text>
+            <Text style={styles.summaryAmount}>Rp10.000,00</Text>
+          </View>
+
+          {/* Expense Column */}
+          <View style={[styles.summaryCol, { alignItems: "flex-end" }]}>
+            <View style={styles.arrowIconWrap}>
+              <Ionicons
+                name="arrow-up-outline"
+                size={16}
+                color={Palette.PoppyRed}
+                style={{ transform: [{ rotate: "45deg" }] }}
+              />
+            </View>
+            <Text style={styles.summaryLabel}>Expense</Text>
+            <Text style={styles.summaryAmount}>Rp10.000,00</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Categories (LazyRow equivalent) */}
+      <Text style={styles.sectionTitle}>Categories</Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.categoryRow}
+      >
+        {Object.values(Category).map((cat) => (
+          <View key={cat.title} style={styles.categoryItem}>
+            <View style={styles.categoryIconWrap}>
+              <Ionicons
+                name={cat.iconName}
+                size={24}
+                color={Palette.EmeraldGreen}
+              />
+            </View>
+            <Text style={styles.categoryTitle} numberOfLines={1}>
+              {cat.title}
+            </Text>
+          </View>
+        ))}
+      </ScrollView>
+
+      <Text style={styles.sectionTitle}>Recent Transactions</Text>
+    </View>
+  );
 
   return (
-    <AuthBackground>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
+    // SafeAreaView respects notches/dynamic islands on iOS
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <FlatList
+        data={dummyActivities}
+        keyExtractor={(item, index) => item.name + index} // Use a real ID in production!
+        renderItem={({ item }) => <FinanceCard activity={item} />}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={ListHeader}
         showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.spacer72} />
-
-        {/* Brand mark */}
-        <View style={styles.brandRow}>
-          <LinearGradient
-            colors={[Palette.EmeraldGreen, Palette.BrightGreen]}
-            style={styles.logoCircle}
-          >
-            <Text style={styles.logoText}>G</Text>
-          </LinearGradient>
-          <Text style={styles.brandName}>GYLT</Text>
-        </View>
-
-        <View style={styles.spacer52} />
-
-        {/* Editorial headline */}
-        <Text style={styles.headline}>Welcome{"\n"}back.</Text>
-        <Text style={styles.subHeadline}>
-          Sign in to pick up where you left off.
-        </Text>
-
-        <View style={styles.spacer44} />
-
-        {/* Form card */}
-        <View style={styles.card}>
-          <StealthField
-            label="EMAIL"
-            placeholder="your@email.com"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-          />
-
-          <View style={styles.spacer20} />
-
-          <StealthField
-            label="PASSWORD"
-            placeholder="••••••••"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={!passwordVisible}
-            trailingContent={
-              <TouchableOpacity
-                onPress={() => setPasswordVisible(!passwordVisible)}
-              >
-                <Ionicons
-                  name={passwordVisible ? "eye-outline" : "eye-off-outline"}
-                  size={20}
-                  color={Palette.InkMuted}
-                />
-              </TouchableOpacity>
-            }
-          />
-
-          <View style={styles.spacer8} />
-
-          <TouchableOpacity style={styles.forgotPasswordWrap}>
-            <Text style={styles.forgotPasswordText}>Forgot password?</Text>
-          </TouchableOpacity>
-
-          <View style={styles.spacer28} />
-
-          {/* Gradient CTA button */}
-          <GradientButton
-            title="Sign In"
-            onPress={() => router.push(AppRoutes.Home)}
-          />
-        </View>
-
-        <View style={styles.spacer24} />
-
-        {/* Divider */}
-        <View style={styles.dividerRow}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}> or </Text>
-          <View style={styles.dividerLine} />
-        </View>
-
-        <View style={styles.spacer20} />
-
-        {/* Google button */}
-        <SocialButton
-          onPress={() => console.log("Logging in with Google...")}
-        />
-
-        <View style={styles.spacer36} />
-
-        {/* Sign Up link */}
-        <View style={styles.signUpRow}>
-          <Text style={styles.newHereText}>New here? </Text>
-          <TouchableOpacity onPress={() => router.push(AppRoutes.SignUp)}>
-            <Text style={styles.signUpText}>Create account →</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.spacer48} />
-      </ScrollView>
-    </AuthBackground>
+      />
+    </SafeAreaView>
   );
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
+// ── Styles ────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  scrollContent: {
-    paddingHorizontal: 28,
+  container: { flex: 1, backgroundColor: Palette.Canvas },
+  listContent: { paddingHorizontal: 20, paddingBottom: 20 },
+  headerContainer: { paddingBottom: 10 },
+
+  // Greeting
+  greetingSection: { marginVertical: 10 },
+  helloText: { fontSize: 24, fontWeight: "300", color: Palette.InkDark },
+  userText: { fontSize: 32, fontWeight: "bold", color: Palette.InkDark },
+
+  // Summary Card
+  summaryCard: {
+    backgroundColor: Palette.EmeraldGreen,
+    borderRadius: 15,
+    overflow: "hidden",
+    marginTop: 10,
+    marginBottom: 20,
   },
-  brandRow: {
+  summaryHeader: {
     flexDirection: "row",
-    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: Palette.Black2,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
   },
-  logoCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
+  summaryHeaderText: { color: "white", fontSize: 12 },
+  summaryBody: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 15,
   },
-  logoText: {
-    color: "#FFF",
-    fontWeight: "900",
+  summaryCol: { justifyContent: "space-between", alignItems: "flex-start" },
+  arrowIconWrap: {
+    backgroundColor: Palette.StarkWhite,
+    borderRadius: 10,
+    padding: 5,
+    marginBottom: 10,
+  },
+  summaryLabel: {
+    color: Palette.StarkWhite,
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 5,
+  },
+  summaryAmount: { color: Palette.StarkWhite, fontSize: 18, fontWeight: "600" },
+
+  // Categories
+  sectionTitle: {
     fontSize: 18,
-  },
-  brandName: {
-    color: Palette.InkDark,
-    fontWeight: "900",
-    letterSpacing: 4,
-    fontSize: 14,
-  },
-  headline: {
-    color: Palette.InkDark,
-    fontWeight: "bold",
-    fontSize: 48,
-    lineHeight: 52,
-    letterSpacing: -1.5,
-    marginBottom: 6,
-  },
-  subHeadline: {
-    color: Palette.InkMuted,
-    fontSize: 15,
-    fontStyle: "italic",
-  },
-  card: {
-    width: "100%",
-    backgroundColor: Palette.CardSurface,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: Palette.CardBorder,
-    padding: 24,
-  },
-  forgotPasswordWrap: {
-    alignSelf: "flex-start",
-  },
-  forgotPasswordText: {
-    color: Palette.TealGreen,
-    fontSize: 12,
     fontWeight: "600",
+    color: Palette.InkDark,
+    marginBottom: 10,
   },
-  dividerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    width: "100%",
+  categoryRow: { paddingBottom: 20, paddingRight: 5 },
+  categoryItem: { width: 80, alignItems: "center" },
+  categoryIconWrap: {
+    backgroundColor: Palette.StarkWhite,
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 5,
+    // Shadows
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 1,
   },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: Palette.CardBorder,
-  },
-  dividerText: {
-    color: Palette.InkMuted,
-    fontSize: 11,
-    letterSpacing: 2,
-  },
-  signUpRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    width: "100%",
-  },
-  newHereText: {
-    color: Palette.InkMuted,
-    fontSize: 14,
-  },
-  signUpText: {
-    color: Palette.EmeraldGreen,
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  // Spacers
-  spacer8: { height: 8 },
-  spacer20: { height: 20 },
-  spacer24: { height: 24 },
-  spacer28: { height: 28 },
-  spacer36: { height: 36 },
-  spacer44: { height: 44 },
-  spacer48: { height: 48 },
-  spacer52: { height: 52 },
-  spacer72: { height: 72 },
+  categoryTitle: { fontSize: 12, color: Palette.InkDark },
 });
