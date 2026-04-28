@@ -2,11 +2,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import AuthBackground from "@/components/layout/auth-background";
@@ -15,9 +15,14 @@ import SocialButton from "@/components/ui/social-button";
 import StealthField from "@/components/ui/stealth-field";
 import { AppRoutes } from "@/constants/routes";
 import { Palette } from "@/constants/theme";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { signUp } from "@/store/slices/authSlice";
 
 export default function SignUpScreen() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const { loading, error } = useAppSelector((state) => state.auth);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -30,9 +35,12 @@ export default function SignUpScreen() {
   const passwordsMatch =
     confirmPassword.length === 0 || password === confirmPassword;
 
-  const handleSignUp = () => {
-    if (passwordsMatch && password.length > 0) {
-      router.push(AppRoutes.Home);
+  const handleSignUp = async () => {
+    if (!passwordsMatch || password.length <= 0 || fullName.length <= 0) return;
+
+    const result = await dispatch(signUp({ email, password, fullName }));
+    if (signUp.fulfilled.match(result)) {
+      router.replace(AppRoutes.Home);
     }
   };
 
@@ -61,6 +69,7 @@ export default function SignUpScreen() {
             placeholder="John Doe"
             value={fullName}
             onChangeText={setFullName}
+            enabled={!loading}
           />
 
           <View style={styles.spacer20} />
@@ -71,6 +80,7 @@ export default function SignUpScreen() {
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
+            enabled={!loading}
           />
 
           <View style={styles.spacer20} />
@@ -81,6 +91,7 @@ export default function SignUpScreen() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!passwordVisible}
+            enabled={!loading}
             trailingContent={
               <TouchableOpacity
                 onPress={() => setPasswordVisible(!passwordVisible)}
@@ -122,7 +133,13 @@ export default function SignUpScreen() {
 
           <View style={styles.spacer28} />
 
-          <GradientButton title="Create Account" onPress={handleSignUp} />
+          {error && <Text style={styles.errorText}>{error}</Text>}
+
+          <GradientButton
+            title={loading ? "Creating..." : "Create Account"}
+            onPress={handleSignUp}
+            disabled={loading}
+          />
         </View>
 
         <View style={styles.spacer24} />
@@ -173,10 +190,10 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   errorText: {
-    color: "#D95858",
-    fontSize: 11,
-    fontWeight: "500",
-    marginTop: 6,
+    color: Palette.RedErrorLight,
+    fontSize: 13,
+    marginBottom: 8,
+    textAlign: "center",
   },
   dividerRow: { flexDirection: "row", alignItems: "center", width: "100%" },
   dividerLine: { flex: 1, height: 1, backgroundColor: Palette.CardBorder },

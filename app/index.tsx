@@ -1,11 +1,8 @@
 import { AppRoutes } from "@/constants/routes";
+import { useAppSelector } from "@/store/hooks";
 import { Redirect } from "expo-router";
 
 export default function RootIndex() {
-  // Eventually, you will check your Zustand store here:
-  // const { user } = useAuthStore();
-  // if (user) return <Redirect href="/(tabs)" />;
-
-  // For now, redirect straight to our shiny new login screen
-  return <Redirect href={AppRoutes.SignIn} />;
+  const userId = useAppSelector((state) => state.auth.userId);
+  return <Redirect href={userId ? AppRoutes.Home : AppRoutes.SignIn} />;
 }

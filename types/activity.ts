@@ -6,6 +6,7 @@ export enum ActivityType {
 }
 
 export interface Activity {
+  id: string;
   name: string;
   type: ActivityType;
   category: CategoryType;

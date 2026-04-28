@@ -1,10 +1,10 @@
 import React from "react";
 import {
-    KeyboardTypeOptions,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  KeyboardTypeOptions,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 
 interface StealthFieldProps {
@@ -16,6 +16,7 @@ interface StealthFieldProps {
   secureTextEntry?: boolean;
   isError?: boolean;
   trailingContent?: React.ReactNode;
+  enabled?: boolean;
 }
 
 export default function StealthField({
@@ -27,6 +28,7 @@ export default function StealthField({
   secureTextEntry = false,
   isError = false,
   trailingContent,
+  enabled = true,
 }: StealthFieldProps) {
   const labelColor = isError ? "#D95858" : "#5A8A6A";
   const borderColor = isError ? "#D95858" : "#D6EDE0";
@@ -44,6 +46,7 @@ export default function StealthField({
           keyboardType={keyboardType}
           secureTextEntry={secureTextEntry}
           autoCapitalize="none"
+          editable={enabled}
         />
         {trailingContent && (
           <View style={styles.trailingIcon}>{trailingContent}</View>

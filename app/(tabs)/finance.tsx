@@ -119,7 +119,7 @@ export default function FinanceScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Palette.Canvas },
+  container: { flex: 1, backgroundColor: Palette.Canvas, paddingTop: 10 },
   listContent: { paddingHorizontal: 20, paddingBottom: 100 }, // Extra bottom padding for the FAB
   headerContainer: { paddingBottom: 10 },
 

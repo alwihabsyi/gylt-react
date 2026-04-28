@@ -2,9 +2,13 @@ import { LabeledTextField } from "@/components/ui/labeled-text-field";
 import { RoundedItemCard } from "@/components/ui/rounded-item-card";
 import { SimpleGrid } from "@/components/ui/simple-grid";
 import { Palette } from "@/constants/theme";
-import { ActivityType, ALL_ACTIVITY_TYPES } from "@/types/activity";
-import { ALL_CATEGORIES, Category, CategoryType } from "@/types/category";
-import { ALL_PAYMENT_METHODS } from "@/types/payment-method";
+import {
+  ALL_GOAL_INTERVALS,
+  ALL_GOAL_TYPES,
+  GoalInterval,
+  GoalType,
+} from "@/types/goal";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ScrollView,
@@ -15,20 +19,19 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type Props = {
-  onBack: () => void;
-};
+export default function AddGoalScreen() {
+  const router = useRouter();
 
-export default function AddTransactionScreen({ onBack }: Props) {
-  const [selectedType, setSelectedType] = useState<string>(ActivityType.Income);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryType>(
-    Category.Bills,
+  const [selectedType, setSelectedType] = useState<GoalType>(
+    GoalType.Financial,
   );
-
-  const [amount, setAmount] = useState("");
+  const [selectedInterval, setSelectedInterval] = useState<GoalInterval>(
+    GoalInterval.Monthly,
+  );
   const [name, setName] = useState("");
+  const [amount, setAmount] = useState("");
+  const [target, setTarget] = useState("");
   const [date, setDate] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("");
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -37,9 +40,9 @@ export default function AddTransactionScreen({ onBack }: Props) {
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
       >
-        {/* Income / Expense Toggle */}
+        {/* Goal Type Toggle */}
         <View style={styles.typeRow}>
-          {ALL_ACTIVITY_TYPES.map((type) => {
+          {ALL_GOAL_TYPES.map((type) => {
             const selected = selectedType === type;
             return (
               <TouchableOpacity
@@ -61,7 +64,7 @@ export default function AddTransactionScreen({ onBack }: Props) {
                     { color: selected ? "#FFFFFF" : "#000000" },
                   ]}
                 >
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                  {type}
                 </Text>
               </TouchableOpacity>
             );
@@ -71,67 +74,60 @@ export default function AddTransactionScreen({ onBack }: Props) {
         {/* Form Card */}
         <View style={styles.card}>
           <LabeledTextField
-            fieldType={{ kind: "number" }}
-            label="Amount"
-            value={amount}
-            onValueChange={setAmount}
-            prefix="Rp "
-          />
-
-          {selectedType === ActivityType.Expense && (
-            <View style={styles.categorySection}>
-              <Text style={styles.sectionLabel}>Category</Text>
-              <SimpleGrid
-                items={ALL_CATEGORIES}
-                columns={3}
-                horizontalSpacing={10}
-                verticalSpacing={10}
-                renderItem={(category) => (
-                  <RoundedItemCard
-                    text={category.title}
-                    icon={category.iconName}
-                    isSelected={selectedCategory === category}
-                    onClick={() => setSelectedCategory(category)}
-                  />
-                )}
-              />
-            </View>
-          )}
-
-          <LabeledTextField
             fieldType={{ kind: "text" }}
             label="Name"
             value={name}
             onValueChange={setName}
-            placeHolder="Give this transaction a name.."
+            placeHolder="Enter the name of your goal.."
+          />
+
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Interval</Text>
+            <SimpleGrid
+              items={ALL_GOAL_INTERVALS}
+              columns={3}
+              horizontalSpacing={10}
+              verticalSpacing={10}
+              renderItem={(interval) => (
+                <RoundedItemCard
+                  text={interval.charAt(0).toUpperCase() + interval.slice(1)}
+                  isSelected={selectedInterval === interval}
+                  onClick={() => setSelectedInterval(interval)}
+                />
+              )}
+            />
+          </View>
+
+          <LabeledTextField
+            fieldType={{ kind: "number" }}
+            label="Current Progress (amount, session, etc.)"
+            value={amount}
+            onValueChange={setAmount}
+            placeHolder="Current progress if any.."
+          />
+
+          <LabeledTextField
+            fieldType={{ kind: "number" }}
+            label="Target"
+            value={target}
+            onValueChange={setTarget}
+            placeHolder="Your target.."
           />
 
           <LabeledTextField
             fieldType={{ kind: "date" }}
-            label="Date"
+            label="Target Date"
             value={date}
             onValueChange={setDate}
-            placeHolder="Enter the date of transaction.."
+            placeHolder="Your goal deadline.."
           />
-
-          {selectedType === ActivityType.Expense && (
-            <LabeledTextField
-              fieldType={{ kind: "options", options: ALL_PAYMENT_METHODS }}
-              label="Payment Method"
-              value={paymentMethod}
-              onValueChange={setPaymentMethod}
-              placeHolder="Your payment method.."
-            />
-          )}
 
           <TouchableOpacity
             style={styles.submitButton}
-            onPress={onBack}
+            onPress={() => router.back()}
             activeOpacity={0.85}
           >
-            <Text style={styles.submitButtonText}>
-              Add {selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}
-            </Text>
+            <Text style={styles.submitButtonText}>Start tracking!</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -172,7 +168,7 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 20,
   },
-  categorySection: {
+  section: {
     gap: 5,
   },
   sectionLabel: {

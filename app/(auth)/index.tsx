@@ -4,9 +4,11 @@ import SocialButton from "@/components/ui/social-button";
 import StealthField from "@/components/ui/stealth-field";
 import { AppRoutes } from "@/constants/routes";
 import { Palette } from "@/constants/theme";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { signIn } from "@/store/slices/authSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ScrollView,
@@ -18,10 +20,22 @@ import {
 
 export default function SignInScreen() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const { loading, error, userId } = useAppSelector((state) => state.auth);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
+
+  if (userId) return <Redirect href={AppRoutes.Home} />;
+
+  const handleSignIn = async () => {
+    const result = await dispatch(signIn({ email, password }));
+    if (signIn.fulfilled.match(result)) {
+      router.replace(AppRoutes.Home);
+    }
+  };
 
   return (
     <AuthBackground>
@@ -60,6 +74,7 @@ export default function SignInScreen() {
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
+            enabled={!loading}
           />
 
           <View style={styles.spacer20} />
@@ -70,6 +85,7 @@ export default function SignInScreen() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!passwordVisible}
+            enabled={!loading}
             trailingContent={
               <TouchableOpacity
                 onPress={() => setPasswordVisible(!passwordVisible)}
@@ -92,9 +108,12 @@ export default function SignInScreen() {
           <View style={styles.spacer28} />
 
           {/* Gradient CTA button */}
+          {error && <Text style={styles.errorText}>{error}</Text>}
+
           <GradientButton
-            title="Sign In"
-            onPress={() => router.push(AppRoutes.Home)}
+            title={loading ? "Signing in..." : "Sign In"}
+            onPress={handleSignIn}
+            disabled={loading}
           />
         </View>
 
@@ -216,6 +235,12 @@ const styles = StyleSheet.create({
     color: Palette.EmeraldGreen,
     fontSize: 14,
     fontWeight: "600",
+  },
+  errorText: {
+    color: Palette.RedErrorLight,
+    fontSize: 13,
+    marginBottom: 8,
+    textAlign: "center",
   },
   // Spacers
   spacer8: { height: 8 },
