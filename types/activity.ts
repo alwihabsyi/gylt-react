@@ -7,11 +7,12 @@ export enum ActivityType {
 
 export interface Activity {
   id: string;
+  userId: string;
   name: string;
   type: ActivityType;
   category: CategoryType;
   amount: number;
-  createdAt: Date;
+  createdAt: string;
 }
 
 export const ALL_ACTIVITY_TYPES = Object.values(ActivityType);

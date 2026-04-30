@@ -1,4 +1,4 @@
-import { toRupiah } from "@/utils/formatter";
+import { formatCurrency } from "@/utils/formatter";
 import { GoalInterval, GoalType } from "../types/goal";
 
 export type Goals = {
@@ -51,7 +51,7 @@ export function formattedIntervalTarget(goal: Goals): string {
   const intValue = Math.floor(value);
 
   if (goal.goalType === GoalType.Financial) {
-    return toRupiah(value);
+    return formatCurrency(value);
   }
 
   const unit =

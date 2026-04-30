@@ -2,9 +2,17 @@ import { LabeledTextField } from "@/components/ui/labeled-text-field";
 import { RoundedItemCard } from "@/components/ui/rounded-item-card";
 import { SimpleGrid } from "@/components/ui/simple-grid";
 import { Palette } from "@/constants/theme";
-import { ActivityType, ALL_ACTIVITY_TYPES } from "@/types/activity";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { addActivity, clearError } from "@/store/slices/activitySlice";
+import { Activity, ActivityType, ALL_ACTIVITY_TYPES } from "@/types/activity";
 import { ALL_CATEGORIES, Category, CategoryType } from "@/types/category";
 import { ALL_PAYMENT_METHODS } from "@/types/payment-method";
+import {
+  FormErrors,
+  hasErrors,
+  validateActivityForm,
+} from "@/utils/activity-validation";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ScrollView,
@@ -20,15 +28,79 @@ type Props = {
 };
 
 export default function AddTransactionScreen({ onBack }: Props) {
-  const [selectedType, setSelectedType] = useState<string>(ActivityType.Income);
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { loading, error } = useAppSelector((state) => state.transactions);
+  const userId = useAppSelector((state) => state.auth.userId);
+
+  const [selectedType, setSelectedType] = useState<ActivityType>(
+    ActivityType.Income,
+  );
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>(
     Category.Bills,
   );
-
   const [amount, setAmount] = useState("");
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [submitted, setSubmitted] = useState(false);
+
+  const revalidate = (overrides: Partial<typeof fields>) => {
+    if (!submitted) return;
+    setErrors(validateActivityForm({ ...fields, ...overrides }));
+  };
+
+  const fields = { amount, name, date, paymentMethod, type: selectedType };
+
+  const handleTypeChange = (type: ActivityType) => {
+    setSelectedType(type);
+    revalidate({ type });
+  };
+
+  const handleAmountChange = (value: string) => {
+    setAmount(value);
+    revalidate({ amount: value });
+  };
+
+  const handleNameChange = (value: string) => {
+    setName(value);
+    revalidate({ name: value });
+  };
+
+  const handleDateChange = (value: string) => {
+    setDate(value);
+    revalidate({ date: value });
+  };
+
+  const handlePaymentMethodChange = (value: string) => {
+    setPaymentMethod(value);
+    revalidate({ paymentMethod: value });
+  };
+
+  const handleTransaction = async () => {
+    setSubmitted(true);
+    dispatch(clearError());
+    const validationErrors = validateActivityForm(fields);
+    if (hasErrors(validationErrors) || userId === null) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    const payload: Omit<Activity, "id"> = {
+      userId: userId,
+      name,
+      type: selectedType,
+      category: selectedType === ActivityType.Expense ? selectedCategory : Category.Bills,
+      amount: parseFloat(amount),
+      createdAt: date,
+    };
+
+    const result = await dispatch(addActivity(payload));
+    if (addActivity.fulfilled.match(result)) {
+      router.back();
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -46,13 +118,9 @@ export default function AddTransactionScreen({ onBack }: Props) {
                 key={type}
                 style={[
                   styles.typeButton,
-                  {
-                    backgroundColor: selected
-                      ? Palette.EmeraldGreen
-                      : "#FFFFFF",
-                  },
+                  { backgroundColor: selected ? Palette.EmeraldGreen : "#FFFFFF" },
                 ]}
-                onPress={() => setSelectedType(type)}
+                onPress={() => handleTypeChange(type)}
                 activeOpacity={0.8}
               >
                 <Text
@@ -74,8 +142,9 @@ export default function AddTransactionScreen({ onBack }: Props) {
             fieldType={{ kind: "number" }}
             label="Amount"
             value={amount}
-            onValueChange={setAmount}
+            onValueChange={handleAmountChange}
             prefix="Rp "
+            error={errors.amount}
           />
 
           {selectedType === ActivityType.Expense && (
@@ -102,16 +171,18 @@ export default function AddTransactionScreen({ onBack }: Props) {
             fieldType={{ kind: "text" }}
             label="Name"
             value={name}
-            onValueChange={setName}
+            onValueChange={handleNameChange}
             placeHolder="Give this transaction a name.."
+            error={errors.name}
           />
 
           <LabeledTextField
             fieldType={{ kind: "date" }}
             label="Date"
             value={date}
-            onValueChange={setDate}
+            onValueChange={handleDateChange}
             placeHolder="Enter the date of transaction.."
+            error={errors.date}
           />
 
           {selectedType === ActivityType.Expense && (
@@ -119,18 +190,28 @@ export default function AddTransactionScreen({ onBack }: Props) {
               fieldType={{ kind: "options", options: ALL_PAYMENT_METHODS }}
               label="Payment Method"
               value={paymentMethod}
-              onValueChange={setPaymentMethod}
+              onValueChange={handlePaymentMethodChange}
               placeHolder="Your payment method.."
+              error={errors.paymentMethod}
             />
           )}
 
+          {!!error && (
+            <View style={styles.backendError}>
+              <Text style={styles.backendErrorText}>{error}</Text>
+            </View>
+          )}
+
           <TouchableOpacity
-            style={styles.submitButton}
-            onPress={onBack}
+            style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+            onPress={handleTransaction}
             activeOpacity={0.85}
+            disabled={loading}
           >
             <Text style={styles.submitButtonText}>
-              Add {selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}
+              {loading
+                ? "Saving…"
+                : `Add ${selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}`}
             </Text>
           </TouchableOpacity>
         </View>
@@ -188,9 +269,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  submitButtonDisabled: {
+    opacity: 0.6,
+  },
   submitButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
+  },
+  backendError: {
+    backgroundColor: `${Palette.PoppyRed}15`,
+    borderRadius: 10,
+    padding: 12,
+  },
+  backendErrorText: {
+    color: Palette.PoppyRed,
+    fontSize: 13,
+    fontWeight: "500",
+    textAlign: "center",
   },
 });

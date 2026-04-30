@@ -1,6 +1,6 @@
 import { GoalInterval } from "@/types/goal";
 
-export const toRupiah = (amount: number): string => {
+export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
@@ -49,6 +49,13 @@ export const formatDate = (date: Date): string => {
     year: "numeric",
   }).format(date);
 };
+
+export function parseFormattedDate(value: string): Date | null {
+  const [day, month, year] = value.split("/").map(Number);
+  if (!day || !month || !year) return null;
+  const date = new Date(year, month - 1, day);
+  return isNaN(date.getTime()) ? null : date;
+}
 
 export const getCurrentMonthYear = (): string => {
   return new Intl.DateTimeFormat("en-US", {

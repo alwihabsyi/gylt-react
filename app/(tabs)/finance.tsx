@@ -1,113 +1,76 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { FlatList, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useMemo, useState } from "react";
+import { FlatList, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import FinanceCard from "@/components/finance/finance-card";
-import OptionPill from "@/components/ui/option-pill";
-import SearchBar from "@/components/ui/search-bar";
+import FinanceHeader from "@/components/home/finance-header";
+import GlobalEmptyState from "@/components/ui/global-empty-state";
+import GlobalError from "@/components/ui/global-error";
+import GlobalLoading from "@/components/ui/global-loading";
 import SpeedDialFab from "@/components/ui/speed-dial-fab";
 import { AppRoutes } from "@/constants/routes";
 import { Palette } from "@/constants/theme";
-import { Activity, ActivityType } from "@/types/activity";
+import { useAppSelector } from "@/store/hooks";
 import { Category } from "@/types/category";
-import { getCurrentMonthYear, toRupiah } from "@/utils/formatter";
-
-const dummyActivities: Activity[] = [
-  {
-    name: "Makan kantin",
-    type: ActivityType.Expense,
-    category: Category.Food,
-    amount: 10000.0,
-    createdAt: new Date(),
-  },
-  {
-    name: "Belanja",
-    type: ActivityType.Expense,
-    category: Category.Shopping,
-    amount: 150000.0,
-    createdAt: new Date(),
-  },
-  {
-    name: "Monthly salary",
-    type: ActivityType.Income,
-    category: Category.Bills,
-    amount: 200000.0,
-    createdAt: new Date(),
-  },
-];
+import { getTotals } from "@/utils/activity";
 
 export default function FinanceScreen() {
   const router = useRouter();
+  const { loading, error, items } = useAppSelector((state) => state.transactions);
+  const { income, expense } = getTotals(items);
   const [selectedFilter, setSelectedFilter] = useState("All");
 
-  const filterOptions = ["All", ...Object.values(Category).map((c) => c.title)];
+  const filterOptions = useMemo(
+    () => ["All", ...Object.values(Category).map((c) => c.title)],
+    []
+  );
 
-  const currMonthExpense = dummyActivities
-    .filter((a) => a.type === ActivityType.Expense)
-    .reduce((sum, a) => sum + a.amount, 0);
-  const currMonthIncome = dummyActivities
-    .filter((a) => a.type === ActivityType.Income)
-    .reduce((sum, a) => sum + a.amount, 0);
+  const renderHeader = useCallback(
+    () => <FinanceHeader
+      income={income}
+      expense={expense}
+      filterOptions={filterOptions}
+      selectedFilter={selectedFilter}
+      setSelectedFilter={setSelectedFilter}
+    />,
+    [income, expense, filterOptions, selectedFilter, setSelectedFilter]
+  );
 
-  const ListHeader = () => (
-    <View style={styles.headerContainer}>
-      <SearchBar onSearch={(q) => console.log("Searching:", q)} />
-
-      <View style={styles.spacer20} />
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.pillsRow}
-      >
-        {filterOptions.map((option) => (
-          <OptionPill
-            key={option}
-            optionName={option}
-            isSelected={selectedFilter === option}
-            onItemSelected={setSelectedFilter}
-          />
-        ))}
-      </ScrollView>
-
-      <View style={styles.spacer20} />
-
-      <Text style={styles.monthText}>{getCurrentMonthYear()}</Text>
-
-      <View style={styles.summaryRow}>
-        <View style={styles.summaryItem}>
-          <Ionicons name="arrow-down" size={16} color={Palette.EmeraldGreen} />
-          <Text style={[styles.summaryAmount, { color: Palette.EmeraldGreen }]}>
-            {toRupiah(currMonthIncome)}
-          </Text>
-        </View>
-
-        <View style={styles.summaryItem}>
-          <Ionicons name="arrow-up" size={16} color={Palette.RedErrorLight} />
-          <Text
-            style={[styles.summaryAmount, { color: Palette.RedErrorLight }]}
-          >
-            {toRupiah(currMonthExpense)}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.spacer10} />
-    </View>
+  const bodyContent = loading ? (
+    <GlobalLoading label="Loading your transactions…" />
+  ) : error ? (
+    <GlobalError title="Something went wrong" message={error} />
+  ) : (
+    <GlobalEmptyState
+      icon="🧾"
+      title="No transactions yet"
+      message="Add your first transaction to see your summary here."
+      actionLabel="Add transaction"
+      onAction={() => router.push(AppRoutes.AddTransaction)}
+    />
   );
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <FlatList
-        data={dummyActivities}
-        keyExtractor={(item, index) => item.name + index}
-        renderItem={({ item }) => <FinanceCard activity={item} />}
-        contentContainerStyle={styles.listContent}
-        ListHeaderComponent={ListHeader}
-        showsVerticalScrollIndicator={false}
-      />
+      {items.length > 0 ? (
+        <FlatList
+          data={items}
+          keyExtractor={(item, index) => item.name + index}
+          renderItem={({ item }) => <FinanceCard activity={item} />}
+          contentContainerStyle={styles.listContent}
+          ListHeaderComponent={renderHeader}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        <ScrollView
+          contentContainerStyle={[styles.listContent, styles.scrollGrow]}
+          showsVerticalScrollIndicator={false}
+        >
+          {renderHeader()}
+          {bodyContent}
+        </ScrollView>
+      )}
 
       {/* FAB sits absolutely positioned over the list */}
       <SpeedDialFab
@@ -141,4 +104,5 @@ const styles = StyleSheet.create({
 
   spacer10: { height: 10 },
   spacer20: { height: 20 },
+  scrollGrow: { flexGrow: 1 },
 });

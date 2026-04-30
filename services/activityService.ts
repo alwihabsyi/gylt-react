@@ -1,13 +1,13 @@
 import { Activity } from "@/types/activity";
 import {
-    addDoc,
-    collection,
-    deleteDoc,
-    doc,
-    getDocs,
-    orderBy,
-    query,
-    where,
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+  where,
 } from "firebase/firestore";
 import { db } from "./firebase/config";
 
@@ -18,7 +18,7 @@ export const activityService = {
     const q = query(
       collection(db, COL),
       where("userId", "==", userId),
-      orderBy("date", "desc"),
+      orderBy("createdAt", "desc"),
     );
     const snapshot = await getDocs(q);
     return snapshot.docs.map(

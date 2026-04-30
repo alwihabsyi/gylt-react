@@ -1,5 +1,4 @@
 import { Palette } from "@/constants/theme";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useState } from "react";
 import {
   FlatList,
@@ -10,6 +9,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import DateTimePickerModal from "./date-time-picker";
 
 export type FieldType =
   | { kind: "number" }
@@ -24,6 +24,7 @@ type LabeledTextFieldProps = {
   onValueChange: (val: string) => void;
   prefix?: string;
   placeHolder?: string;
+  error?: string;
 };
 
 function isValueValid(fieldType: FieldType, value: string): boolean {
@@ -34,8 +35,10 @@ function isValueValid(fieldType: FieldType, value: string): boolean {
 function formatDate(date: Date): string {
   return date.toLocaleDateString("id-ID", {
     year: "numeric",
-    month: "2-digit",
+    month: "short",
     day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -54,6 +57,7 @@ export function LabeledTextField({
   onValueChange,
   prefix,
   placeHolder,
+  error
 }: LabeledTextFieldProps) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -62,7 +66,12 @@ export function LabeledTextField({
 
   const isReadOnly = fieldType.kind === "date" || fieldType.kind === "options";
 
-  const borderColor = isFocused ? Palette.EmeraldGreen : "#D3D3D3";
+  // Error takes priority over focus color
+  const borderColor = error
+    ? Palette.PoppyRed
+    : isFocused
+      ? Palette.EmeraldGreen
+      : "#D3D3D3";
 
   const handlePress = () => {
     if (fieldType.kind === 'date') {
@@ -112,38 +121,16 @@ export function LabeledTextField({
         <TrailingIcon />
       </TouchableOpacity>
 
-      {/* Date Picker */}
+      {!!error && (
+        <Text style={styles.errorText}>{error}</Text>
+      )}
+
       {showDatePicker && (
-        <Modal visible transparent animationType="fade" onRequestClose={() => setShowDatePicker(false)}>
-          <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowDatePicker(false)}>
-            <TouchableOpacity activeOpacity={1} style={styles.datePickerCard}>
-
-              <DateTimePicker
-                minimumDate={new Date(2000, 0, 1)}
-                value={tempDate}
-                mode="date"
-                display="spinner"
-                themeVariant="light"
-                onChange={(_, selectedDate) => {
-                  if (selectedDate) setTempDate(selectedDate);
-                }}
-              />
-
-              <View style={styles.datePickerActions}>
-                <TouchableOpacity onPress={() => setShowDatePicker(false)}>
-                  <Text style={styles.cancelText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => {
-                  onValueChange(formatDate(tempDate));
-                  setShowDatePicker(false);
-                }}>
-                  <Text style={styles.confirmText}>OK</Text>
-                </TouchableOpacity>
-              </View>
-
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </Modal>
+        <DateTimePickerModal
+          value={tempDate}
+          onChange={(date) => onValueChange(formatDate(date))}
+          onClose={() => setShowDatePicker(false)}
+        />
       )}
 
       {/* Dropdown Modal */}
@@ -216,6 +203,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#A0A0A0",
     marginLeft: 8,
+  },
+  errorText: {
+    fontSize: 12,
+    color: Palette.PoppyRed,
+    marginTop: 2,
   },
   modalOverlay: {
     flex: 1,

@@ -15,7 +15,7 @@ const initialState: ActivityState = {
 };
 
 // Async thunks
-export const fetchActivitys = createAsyncThunk(
+export const fetchActivities = createAsyncThunk(
   "activities/fetchAll",
   async (userId: string) => activityService.getAll(userId),
 );
@@ -36,25 +36,38 @@ export const deleteActivity = createAsyncThunk(
 const activitySlice = createSlice({
   name: "activities",
   initialState,
-  reducers: {},
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // fetch
-      .addCase(fetchActivitys.pending, (state) => {
+      .addCase(fetchActivities.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchActivitys.fulfilled, (state, action) => {
+      .addCase(fetchActivities.fulfilled, (state, action) => {
         state.loading = false;
         state.items = action.payload;
       })
-      .addCase(fetchActivitys.rejected, (state, action) => {
+      .addCase(fetchActivities.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message ?? "Failed to fetch";
       })
       // add
+      .addCase(addActivity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(addActivity.fulfilled, (state, action) => {
+        state.loading = false;
         state.items.unshift(action.payload);
+      })
+      .addCase(addActivity.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message ?? "Failed to add activity";
       })
       // delete
       .addCase(deleteActivity.fulfilled, (state, action) => {
@@ -62,5 +75,7 @@ const activitySlice = createSlice({
       });
   },
 });
+
+export const { clearError } = activitySlice.actions;
 
 export default activitySlice.reducer;

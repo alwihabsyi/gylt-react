@@ -1,7 +1,7 @@
 // components/finance/FinanceCard.tsx
 import { Palette } from "@/constants/theme";
 import { Activity, ActivityType } from "@/types/activity";
-import { formatDateTime, toRupiah } from "@/utils/formatter";
+import { formatCurrency } from "@/utils/formatter";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -38,9 +38,9 @@ export default function FinanceCard({ activity }: FinanceCardProps) {
       <View style={styles.amounts}>
         <Text style={[styles.amountText, { color: amountColor }]}>
           {symbol}
-          {toRupiah(activity.amount)}
+          {formatCurrency(activity.amount)}
         </Text>
-        <Text style={styles.date}>{formatDateTime(activity.createdAt)}</Text>
+        <Text style={styles.date}>{activity.createdAt}</Text>
       </View>
     </View>
   );

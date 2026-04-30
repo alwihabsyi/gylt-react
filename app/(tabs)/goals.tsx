@@ -45,6 +45,7 @@ function previewGoals(): Goals[] {
 
   return [
     {
+      id: "goal_1",
       name: "Emergency Fund",
       intervalType: GoalInterval.Monthly,
       goalType: GoalType.Financial,
@@ -54,6 +55,7 @@ function previewGoals(): Goals[] {
       targetDate: monthsAhead(9),
     },
     {
+      id: "goal_2",
       name: "Japan Trip 🇯🇵",
       intervalType: GoalInterval.Monthly,
       goalType: GoalType.Financial,
@@ -63,6 +65,7 @@ function previewGoals(): Goals[] {
       targetDate: monthsAhead(10),
     },
     {
+      id: "goal_3",
       name: "Buy a Car 🚗",
       intervalType: GoalInterval.Annually,
       goalType: GoalType.Financial,
@@ -72,6 +75,7 @@ function previewGoals(): Goals[] {
       targetDate: yearsAhead(2),
     },
     {
+      id: "goal_4",
       name: "Gym Consistency 💪",
       intervalType: GoalInterval.Weekly,
       goalType: GoalType.WellBeing,
@@ -81,6 +85,7 @@ function previewGoals(): Goals[] {
       targetDate: weeksAhead(12),
     },
     {
+      id: "goal_5",
       name: "Read 24 Books 📚",
       intervalType: GoalInterval.Monthly,
       goalType: GoalType.WellBeing,
@@ -90,6 +95,7 @@ function previewGoals(): Goals[] {
       targetDate: monthsAhead(10),
     },
     {
+      id: "goal_6",
       name: "Meditation Habit 🧘",
       intervalType: GoalInterval.Weekly,
       goalType: GoalType.WellBeing,
