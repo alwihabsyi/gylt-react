@@ -1,122 +1,64 @@
-import { AppTabLayout } from "@/components/ui/app-tab-layout";
+import GlobalEmptyState from "@/components/ui/global-empty-state";
+import GlobalError from "@/components/ui/global-error";
+import GlobalLoading from "@/components/ui/global-loading";
 import { GoalCard } from "@/components/ui/goal-card";
 import { AppRoutes } from "@/constants/routes";
 import { Palette } from "@/constants/theme";
 import { Goals } from "@/domain/Goals";
-import { GoalInterval, GoalType } from "@/types/goal";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchGoals } from "@/store/slices/goalSlice";
+import { GoalType } from "@/types/goal";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-function previewGoals(): Goals[] {
-  const today = new Date();
-  const monthsAgo = (n: number) => {
-    const d = new Date(today);
-    d.setMonth(d.getMonth() - n);
-    return d;
-  };
-  const monthsAhead = (n: number) => {
-    const d = new Date(today);
-    d.setMonth(d.getMonth() + n);
-    return d;
-  };
-  const weeksAgo = (n: number) => {
-    const d = new Date(today);
-    d.setDate(d.getDate() - n * 7);
-    return d;
-  };
-  const weeksAhead = (n: number) => {
-    const d = new Date(today);
-    d.setDate(d.getDate() + n * 7);
-    return d;
-  };
-  const yearsAgo = (n: number) => {
-    const d = new Date(today);
-    d.setFullYear(d.getFullYear() - n);
-    return d;
-  };
-  const yearsAhead = (n: number) => {
-    const d = new Date(today);
-    d.setFullYear(d.getFullYear() + n);
-    return d;
-  };
+type GoalsContentProps = {
+  goals: Goals[];
+  loading: boolean;
+  error: string | null;
+};
 
-  return [
-    {
-      id: "goal_1",
-      name: "Emergency Fund",
-      intervalType: GoalInterval.Monthly,
-      goalType: GoalType.Financial,
-      targetAmount: 12_000_000,
-      currentAmount: 4_000_000,
-      createdAt: monthsAgo(3),
-      targetDate: monthsAhead(9),
-    },
-    {
-      id: "goal_2",
-      name: "Japan Trip 🇯🇵",
-      intervalType: GoalInterval.Monthly,
-      goalType: GoalType.Financial,
-      targetAmount: 25_000_000,
-      currentAmount: 10_000_000,
-      createdAt: monthsAgo(2),
-      targetDate: monthsAhead(10),
-    },
-    {
-      id: "goal_3",
-      name: "Buy a Car 🚗",
-      intervalType: GoalInterval.Annually,
-      goalType: GoalType.Financial,
-      targetAmount: 150_000_000,
-      currentAmount: 40_000_000,
-      createdAt: yearsAgo(1),
-      targetDate: yearsAhead(2),
-    },
-    {
-      id: "goal_4",
-      name: "Gym Consistency 💪",
-      intervalType: GoalInterval.Weekly,
-      goalType: GoalType.WellBeing,
-      targetAmount: 52,
-      currentAmount: 18,
-      createdAt: weeksAgo(4),
-      targetDate: weeksAhead(12),
-    },
-    {
-      id: "goal_5",
-      name: "Read 24 Books 📚",
-      intervalType: GoalInterval.Monthly,
-      goalType: GoalType.WellBeing,
-      targetAmount: 24,
-      currentAmount: 6,
-      createdAt: monthsAgo(2),
-      targetDate: monthsAhead(10),
-    },
-    {
-      id: "goal_6",
-      name: "Meditation Habit 🧘",
-      intervalType: GoalInterval.Weekly,
-      goalType: GoalType.WellBeing,
-      targetAmount: 100,
-      currentAmount: 35,
-      createdAt: weeksAgo(6),
-      targetDate: weeksAhead(20),
-    },
-  ];
-}
+function GoalsContent({ goals, loading, error }: GoalsContentProps) {
+  const router = useRouter();
 
-type GoalsContentProps = { goals: Goals[] };
+  if (loading) {
+    return <GlobalLoading label="Loading your goals…" />;
+  }
 
-function GoalsContent({ goals }: GoalsContentProps) {
+  if (error) {
+    return <GlobalError title="Something went wrong" message={error} />;
+  }
+
+  if (goals.length === 0) {
+    return (
+      <GlobalEmptyState
+        icon="🧾"
+        title="No goals yet"
+        message="Add your first goal to see it here."
+        actionLabel="Add a goal"
+        onAction={() => router.push(AppRoutes.AddGoal)}
+      />
+    );
+  }
+
   return (
     <ScrollView
       contentContainerStyle={styles.list}
       showsVerticalScrollIndicator={false}
     >
-      {goals.map((goal, index) => (
-        <GoalCard key={index} goals={goal} />
+      {goals.map((goal) => (
+          <GoalCard
+            key={goal.id}
+            goals={goal}
+            onPress={() =>
+              router.push({
+                pathname: "/goals/[id]",
+                params: { id: goal.id },
+              })
+            }
+          />
       ))}
     </ScrollView>
   );
@@ -124,24 +66,37 @@ function GoalsContent({ goals }: GoalsContentProps) {
 
 export default function GoalsScreen() {
   const router = useRouter();
-  const goals = previewGoals();
+  const userId = useAppSelector((state) => state.auth.userId);
+  const dispatch = useAppDispatch();
+  const { loading, error, items } = useAppSelector((state) => state.goals);
+
+  useEffect(() => {
+    if (userId) dispatch(fetchGoals(userId));
+  }, [dispatch, userId]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <AppTabLayout
+      {/* <AppTabLayout
         tabNames={[GoalType.Financial, GoalType.WellBeing]}
         renderContent={(index) => (
           <GoalsContent
-            goals={goals.filter((g) =>
+            loading={loading}
+            error={error}
+            goals={items.filter((g) =>
               index === 0
                 ? g.goalType === GoalType.Financial
                 : g.goalType === GoalType.WellBeing,
             )}
           />
         )}
+      /> */}
+
+      <GoalsContent
+        loading={loading}
+        error={error}
+        goals={items.filter((g) => g.goalType === GoalType.Financial)}
       />
 
-      {/* FAB */}
       <TouchableOpacity
         style={styles.fab}
         onPress={() => router.push(AppRoutes.AddGoal)}

@@ -77,5 +77,4 @@ const activitySlice = createSlice({
 });
 
 export const { clearError } = activitySlice.actions;
-
 export default activitySlice.reducer;

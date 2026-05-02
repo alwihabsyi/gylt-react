@@ -8,4 +8,5 @@ export const AppRoutes = {
 
   AddTransaction: "/finance/add-transaction" as Href,
   AddGoal: "/goals/add-goal" as Href,
+  GoalDetail: "/goals/[id]" as Href
 } as const;

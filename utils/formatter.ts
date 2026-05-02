@@ -13,14 +13,13 @@ export const formatCurrency = (amount: number): string => {
 
 // ── Dates ────────────────────────────────────────────────────────────────
 export const formatDateTime = (date: Date): string => {
-  return new Intl.DateTimeFormat("en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(date);
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = date.toLocaleString("en-US", { month: "short" });
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+
+  return `${day} ${month} ${year}, ${hours}.${minutes}`;
 };
 
 export const getWeekRangeString = (): string => {
@@ -51,9 +50,29 @@ export const formatDate = (date: Date): string => {
 };
 
 export function parseFormattedDate(value: string): Date | null {
-  const [day, month, year] = value.split("/").map(Number);
-  if (!day || !month || !year) return null;
-  const date = new Date(year, month - 1, day);
+  // Format: "30 Apr 2026, 10.00"
+  const match = value.match(
+    /^(\d{1,2})\s([A-Za-z]{3})\s(\d{4}),\s(\d{1,2})\.(\d{2})$/
+  );
+  if (!match) return null;
+
+  const [, day, monthStr, year, hours, minutes] = match;
+
+  const monthNames = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  ];
+  const month = monthNames.indexOf(monthStr);
+  if (month === -1) return null;
+
+  const date = new Date(
+    Number(year),
+    month,
+    Number(day),
+    Number(hours),
+    Number(minutes)
+  );
+
   return isNaN(date.getTime()) ? null : date;
 }
 

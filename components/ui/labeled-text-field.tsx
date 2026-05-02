@@ -1,4 +1,5 @@
 import { Palette } from "@/constants/theme";
+import { formatDateTime } from "@/utils/formatter";
 import React, { useState } from "react";
 import {
   FlatList,
@@ -32,20 +33,10 @@ function isValueValid(fieldType: FieldType, value: string): boolean {
   return true;
 }
 
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("id-ID", {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 const formatNumber = (val: string) => {
   const digits = val.replace(/\D/g, '');
   if (!digits) return '';
-  return parseInt(digits, 10).toLocaleString('id-ID');
+  return parseInt(digits, 10).toLocaleString('en-EN');
 };
 
 const unformatNumber = (val: string) => val.replace(/\D/g, '');
@@ -128,7 +119,7 @@ export function LabeledTextField({
       {showDatePicker && (
         <DateTimePickerModal
           value={tempDate}
-          onChange={(date) => onValueChange(formatDate(date))}
+          onChange={(date) => onValueChange(formatDateTime(date))}
           onClose={() => setShowDatePicker(false)}
         />
       )}

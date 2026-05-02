@@ -2,12 +2,16 @@ import { LabeledTextField } from "@/components/ui/labeled-text-field";
 import { RoundedItemCard } from "@/components/ui/rounded-item-card";
 import { SimpleGrid } from "@/components/ui/simple-grid";
 import { Palette } from "@/constants/theme";
+import { Goals } from "@/domain/Goals";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { addGoal, clearError } from "@/store/slices/goalSlice";
 import {
   ALL_GOAL_INTERVALS,
-  ALL_GOAL_TYPES,
   GoalInterval,
-  GoalType,
+  GoalType
 } from "@/types/goal";
+import { formatDateTime } from "@/utils/formatter";
+import { GoalFormErrors, hasGoalErrors, validateGoalForm } from "@/utils/goal-validation";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -21,17 +25,90 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AddGoalScreen() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
 
-  const [selectedType, setSelectedType] = useState<GoalType>(
-    GoalType.Financial,
-  );
-  const [selectedInterval, setSelectedInterval] = useState<GoalInterval>(
-    GoalInterval.Monthly,
-  );
+  const { loading, error } = useAppSelector((state) => state.goals);
+  const userId = useAppSelector((state) => state.auth.userId);
+
+  const [selectedType, setSelectedType] = useState<GoalType>(GoalType.Financial);
+  const [selectedInterval, setSelectedInterval] = useState<GoalInterval>(GoalInterval.Monthly);
+
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [target, setTarget] = useState("");
   const [date, setDate] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [errors, setErrors] = useState<GoalFormErrors>({});
+
+  const revalidate = (overrides: Partial<typeof fields>) => {
+    if (!submitted) return;
+    setErrors(validateGoalForm({ ...fields, ...overrides }));
+  };
+
+  const fields = {
+    name,
+    currentAmount: amount,
+    targetAmount: target,
+    intervalType: selectedInterval,
+    goalType: selectedType,
+    targetDate: date
+  };
+
+  const handleTypeChange = (type: GoalType) => {
+    setSelectedType(type);
+    revalidate({ goalType: selectedType });
+  };
+
+  const handleIntervalChange = (interval: GoalInterval) => {
+    setSelectedInterval(interval);
+    revalidate({ intervalType: interval });
+  };
+
+  const handleAmountChange = (value: string) => {
+    setAmount(value);
+    revalidate({ currentAmount: value });
+  };
+
+  const handleTargetChange = (value: string) => {
+    setTarget(value);
+    revalidate({ targetAmount: value });
+  };
+
+  const handleNameChange = (value: string) => {
+    setName(value);
+    revalidate({ name: value });
+  };
+
+  const handleDateChange = (value: string) => {
+    setDate(value);
+    revalidate({ targetDate: value });
+  };
+
+  const handleAddGoal = async () => {
+    setSubmitted(true);
+    dispatch(clearError());
+    const validationErrors = validateGoalForm(fields);
+    if (hasGoalErrors(validationErrors) || userId === null) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    const payload: Omit<Goals, "id"> = {
+      userId: userId,
+      name,
+      currentAmount: selectedType === GoalType.Financial ? parseFloat(amount) : parseInt(amount),
+      targetAmount: selectedType === GoalType.Financial ? parseFloat(target) : parseInt(target),
+      intervalType: selectedInterval,
+      goalType: selectedType,
+      targetDate: date,
+      createdAt: formatDateTime(new Date()),
+    };
+
+    const result = await dispatch(addGoal(payload));
+    if (addGoal.fulfilled.match(result)) {
+      router.back();
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -41,7 +118,7 @@ export default function AddGoalScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Goal Type Toggle */}
-        <View style={styles.typeRow}>
+        {/* <View style={styles.typeRow}>
           {ALL_GOAL_TYPES.map((type) => {
             const selected = selectedType === type;
             return (
@@ -55,7 +132,7 @@ export default function AddGoalScreen() {
                       : "#FFFFFF",
                   },
                 ]}
-                onPress={() => setSelectedType(type)}
+                onPress={() => handleTypeChange(type)}
                 activeOpacity={0.8}
               >
                 <Text
@@ -69,7 +146,7 @@ export default function AddGoalScreen() {
               </TouchableOpacity>
             );
           })}
-        </View>
+        </View> */}
 
         {/* Form Card */}
         <View style={styles.card}>
@@ -77,8 +154,9 @@ export default function AddGoalScreen() {
             fieldType={{ kind: "text" }}
             label="Name"
             value={name}
-            onValueChange={setName}
+            onValueChange={handleNameChange}
             placeHolder="Enter the name of your goal.."
+            error={errors.name}
           />
 
           <View style={styles.section}>
@@ -92,7 +170,7 @@ export default function AddGoalScreen() {
                 <RoundedItemCard
                   text={interval.charAt(0).toUpperCase() + interval.slice(1)}
                   isSelected={selectedInterval === interval}
-                  onClick={() => setSelectedInterval(interval)}
+                  onClick={() => handleIntervalChange(interval)}
                 />
               )}
             />
@@ -102,32 +180,44 @@ export default function AddGoalScreen() {
             fieldType={{ kind: "number" }}
             label="Current Progress (amount, session, etc.)"
             value={amount}
-            onValueChange={setAmount}
+            onValueChange={handleAmountChange}
             placeHolder="Current progress if any.."
+            error={errors.currentAmount}
           />
 
           <LabeledTextField
             fieldType={{ kind: "number" }}
             label="Target"
             value={target}
-            onValueChange={setTarget}
+            onValueChange={handleTargetChange}
             placeHolder="Your target.."
+            error={errors.targetAmount}
           />
 
           <LabeledTextField
             fieldType={{ kind: "date" }}
             label="Target Date"
             value={date}
-            onValueChange={setDate}
+            onValueChange={handleDateChange}
             placeHolder="Your goal deadline.."
+            error={errors.targetDate}
           />
 
+          {!!error && (
+            <View style={styles.backendError}>
+              <Text style={styles.backendErrorText}>{error}</Text>
+            </View>
+            )
+          }
+
           <TouchableOpacity
-            style={styles.submitButton}
-            onPress={() => router.back()}
+            style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+            onPress={handleAddGoal}
             activeOpacity={0.85}
+            disabled={loading}
           >
-            <Text style={styles.submitButtonText}>Start tracking!</Text>
+            <Text style={styles.submitButtonText}>
+              {loading ? "Saving…" : "Start tracking!"}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -188,5 +278,19 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
+  },
+  backendError: {
+    backgroundColor: `${Palette.PoppyRed}15`,
+    borderRadius: 10,
+    padding: 12,
+  },
+  backendErrorText: {
+    color: Palette.PoppyRed,
+    fontSize: 13,
+    fontWeight: "500",
+    textAlign: "center",
   },
 });

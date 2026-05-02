@@ -1,27 +1,28 @@
-import { formatCurrency } from "@/utils/formatter";
+import { formatCurrency, parseFormattedDate } from "@/utils/formatter";
 import { GoalInterval, GoalType } from "../types/goal";
 
 export type Goals = {
   id: string;
+  userId: string;
   name: string;
   currentAmount: number;
   targetAmount: number;
   intervalType: GoalInterval;
   goalType: GoalType;
-  targetDate: Date;
-  createdAt: Date;
+  targetDate: string;
+  createdAt: string;
 };
 
 export function goalProgress(goal: Goals): number {
   if (goal.targetAmount <= 0) return 0;
-  return Math.min(goal.currentAmount / goal.targetAmount, 1);
+  return Math.min((goal.currentAmount / goal.targetAmount) * 100, 100);
 }
 
 export function intervalTargetAmount(goal: Goals): number {
-  const start = goal.createdAt;
-  const end = goal.targetDate;
+  const start = parseFormattedDate(goal.createdAt);
+  const end = parseFormattedDate(goal.targetDate);
 
-  if (end <= start) return goal.targetAmount;
+  if (!start || !end || end <= start) return goal.targetAmount;
 
   let totalIntervals = 1;
 

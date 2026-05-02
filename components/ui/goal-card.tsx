@@ -1,18 +1,29 @@
 import { Palette } from "@/constants/theme";
 import { formattedIntervalTarget, goalProgress, Goals } from "@/domain/Goals";
-import { formatDate, getGoalDuration } from "@/utils/formatter";
+import { getGoalDuration, parseFormattedDate } from "@/utils/formatter";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type GoalCardProps = {
   goals: Goals;
+  onPress?: () => void;
 };
 
-export function GoalCard({ goals }: GoalCardProps) {
+export function GoalCard({ goals, onPress }: GoalCardProps) {
   const progress = goalProgress(goals);
+  const targetDate = parseFormattedDate(goals.targetDate);
+  const createdAt = parseFormattedDate(goals.createdAt);
+
+  const Container = onPress ? TouchableOpacity : View;
 
   return (
-    <View style={styles.card}>
+    <Container
+      style={styles.card}
+      onPress={onPress}
+      activeOpacity={onPress ? 0.9 : undefined}
+      accessibilityRole={onPress ? "button" : undefined}
+      accessibilityLabel={onPress ? `Open goal ${goals.name}` : undefined}
+    >
       {/* Left accent bar */}
       <View style={styles.accentBar} />
 
@@ -22,15 +33,13 @@ export function GoalCard({ goals }: GoalCardProps) {
           <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
             {goals.name}
           </Text>
-          <Text style={styles.targetDate}>
-            Target: {formatDate(goals.targetDate)}
-          </Text>
+          <Text style={styles.targetDate}>Target: {goals.targetDate}</Text>
         </View>
 
         {/* Progress bar */}
         <View style={styles.progressTrack}>
           <View
-            style={[styles.progressFill, { width: `${progress * 100}%` }]}
+            style={[styles.progressFill, { width: `${progress}%` }]}
           />
         </View>
 
@@ -50,16 +59,14 @@ export function GoalCard({ goals }: GoalCardProps) {
           <View style={styles.statBox}>
             <Text style={styles.statLabel}>Time Left</Text>
             <Text style={styles.statValue} numberOfLines={1}>
-              {getGoalDuration(
-                goals.createdAt,
-                goals.targetDate,
-                goals.intervalType,
-              )}
+              {createdAt && targetDate
+                ? getGoalDuration(createdAt, targetDate, goals.intervalType)
+                : "-"}
             </Text>
           </View>
         </View>
       </View>
-    </View>
+    </Container>
   );
 }
 
