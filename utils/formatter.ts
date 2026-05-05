@@ -105,3 +105,11 @@ export const getGoalDuration = (
       return `${years} ${years === 1 ? "year" : "years"}`;
   }
 };
+
+export const formatNumber = (val: string) => {
+  const digits = val.replace(/\D/g, '');
+  if (!digits) return '';
+  return parseInt(digits, 10).toLocaleString('en-EN');
+};
+
+export const unformatNumber = (val: string) => val.replace(/\D/g, '');

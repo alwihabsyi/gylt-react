@@ -9,6 +9,7 @@ import {
 
 import { ThemedText } from "@/components/themed-text";
 import { Palette } from "@/constants/theme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
 import { useThemeColor } from "@/hooks/use-theme-color";
 
 export type GlobalEmptyStateProps = {
@@ -31,6 +32,7 @@ export default function GlobalEmptyState({
   style,
 }: GlobalEmptyStateProps) {
   const tint = useThemeColor({}, "tint");
+  const colors = useSemanticColors();
 
   const containerStyle = [
     styles.container,
@@ -40,7 +42,15 @@ export default function GlobalEmptyState({
 
   return (
     <View style={containerStyle}>
-      <View style={styles.card}>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: colors.surface,
+            shadowColor: colors.shadow,
+          },
+        ]}
+      >
         <View
           style={[styles.iconWrap, { borderColor: `${tint}33` }]}
           accessibilityRole="image"
@@ -53,14 +63,20 @@ export default function GlobalEmptyState({
         </ThemedText>
 
         {!!message && (
-          <Text style={styles.message} accessibilityLiveRegion="polite">
+          <Text
+            style={[styles.message, { color: colors.textSecondary }]}
+            accessibilityLiveRegion="polite"
+          >
             {message}
           </Text>
         )}
 
         {!!onAction && (
           <TouchableOpacity
-            style={[styles.button, { borderColor: tint }]}
+            style={[
+              styles.button,
+              { borderColor: tint, backgroundColor: colors.surface },
+            ]}
             onPress={onAction}
             activeOpacity={0.85}
           >
@@ -92,14 +108,12 @@ const styles = StyleSheet.create({
   card: {
     width: "100%",
     maxWidth: 420,
-    backgroundColor: Palette.SurfaceLight,
     borderRadius: 16,
     paddingVertical: 24,
     paddingHorizontal: 18,
     alignItems: "center",
     justifyContent: "center",
 
-    shadowColor: "#000",
     shadowOpacity: 0.07,
     shadowOffset: { width: 0, height: 8 },
     shadowRadius: 18,
@@ -127,7 +141,6 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 13,
-    color: Palette.Black1,
     textAlign: "center",
     lineHeight: 18,
     paddingHorizontal: 10,
@@ -141,7 +154,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: Palette.SurfaceLight,
     paddingHorizontal: 14,
   },
   buttonText: {

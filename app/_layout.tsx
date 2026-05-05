@@ -1,8 +1,9 @@
-import { useColorScheme } from "@/hooks/use-color-scheme";
 import { authService } from "@/services/authService";
 import { store } from "@/store";
-import { useAppDispatch } from "@/store/hooks";
-import { clearUser, setUser } from "@/store/slices/authSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { clearUser, getUserData } from "@/store/slices/authSlice";
+import { setDarkMode } from "@/store/slices/themeSlice";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   DarkTheme,
   DefaultTheme,
@@ -13,34 +14,49 @@ import { useEffect, useState } from "react";
 import "react-native-reanimated";
 import { Provider } from "react-redux";
 
+const DARK_MODE_KEY = "gylt_dark_mode";
+
 function RootLayoutNav() {
   const dispatch = useAppDispatch();
-  const colorScheme = useColorScheme();
+  const darkMode = useAppSelector((state) => state.theme.darkMode);
   const [authReady, setAuthReady] = useState(false);
+
+  // Load persisted theme on mount
+  useEffect(() => {
+    AsyncStorage.getItem(DARK_MODE_KEY).then((val) => {
+      if (val !== null) dispatch(setDarkMode(val === "true"));
+    });
+  }, [dispatch]);
+
+  // Persist theme whenever it changes
+  useEffect(() => {
+    AsyncStorage.setItem(DARK_MODE_KEY, String(darkMode));
+  }, [darkMode]);
 
   useEffect(() => {
     const unsubscribe = authService.onAuthStateChanged((user) => {
       if (user) {
-        dispatch(
-          setUser({ userId: user.uid, email: user.email, fullName: null }),
-        );
+        dispatch(getUserData(user.uid));
       } else {
         dispatch(clearUser());
       }
+
       setAuthReady(true);
     });
+
     return () => unsubscribe();
   }, [dispatch]);
 
   if (!authReady) return null;
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={darkMode ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="finance" options={{ headerShown: false }} />
         <Stack.Screen name="goals" options={{ headerShown: false }} />
+        <Stack.Screen name="settings" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );

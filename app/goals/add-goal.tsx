@@ -2,6 +2,7 @@ import { LabeledTextField } from "@/components/ui/labeled-text-field";
 import { RoundedItemCard } from "@/components/ui/rounded-item-card";
 import { SimpleGrid } from "@/components/ui/simple-grid";
 import { Palette } from "@/constants/theme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
 import { Goals } from "@/domain/Goals";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addGoal, clearError } from "@/store/slices/goalSlice";
@@ -24,6 +25,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AddGoalScreen() {
+  const colors = useSemanticColors();
   const router = useRouter();
   const dispatch = useAppDispatch();
 
@@ -111,7 +113,7 @@ export default function AddGoalScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.screenGrey }]} edges={["top"]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.container}
@@ -149,7 +151,7 @@ export default function AddGoalScreen() {
         </View> */}
 
         {/* Form Card */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <LabeledTextField
             fieldType={{ kind: "text" }}
             label="Name"
@@ -160,7 +162,7 @@ export default function AddGoalScreen() {
           />
 
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Interval</Text>
+            <Text style={[styles.sectionLabel, { color: colors.textPrimary }]}>Interval</Text>
             <SimpleGrid
               items={ALL_GOAL_INTERVALS}
               columns={3}
@@ -216,8 +218,9 @@ export default function AddGoalScreen() {
             activeOpacity={0.85}
             disabled={loading}
           >
-            <Text style={styles.submitButtonText}>
-              {loading ? "Saving…" : "Start tracking!"}</Text>
+            <Text style={[styles.submitButtonText, { color: colors.inverseOnAccent }]}>
+              {loading ? "Saving…" : "Start tracking!"}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -228,7 +231,6 @@ export default function AddGoalScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
   },
   scroll: {
     flex: 1,
@@ -253,7 +255,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   card: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 15,
     padding: 20,
     gap: 20,
@@ -264,7 +265,6 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#000",
   },
   submitButton: {
     marginTop: 10,
@@ -275,7 +275,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   submitButtonText: {
-    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
   },

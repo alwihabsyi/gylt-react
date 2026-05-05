@@ -2,7 +2,7 @@ import React from "react";
 import { ActivityIndicator, StyleSheet, View, type ViewStyle } from "react-native";
 
 import { ThemedText } from "@/components/themed-text";
-import { Palette } from "@/constants/theme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
 import { useThemeColor } from "@/hooks/use-theme-color";
 
 export type GlobalLoadingProps = {
@@ -26,6 +26,7 @@ export default function GlobalLoading({
   style,
 }: GlobalLoadingProps) {
   const tint = useThemeColor({}, "tint");
+  const colors = useSemanticColors();
 
   const containerStyle = [
     styles.container,
@@ -35,7 +36,12 @@ export default function GlobalLoading({
 
   return (
     <View style={containerStyle}>
-      <View style={styles.card}>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.surface, shadowColor: colors.shadow },
+        ]}
+      >
         <ActivityIndicator size={size} color={tint} />
         <ThemedText style={styles.label} type="defaultSemiBold">
           {label}
@@ -63,7 +69,6 @@ const styles = StyleSheet.create({
   card: {
     width: "100%",
     maxWidth: 380,
-    backgroundColor: Palette.SurfaceLight,
     borderRadius: 16,
     paddingVertical: 22,
     paddingHorizontal: 18,
@@ -71,7 +76,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
 
     // subtle elevation/shadow
-    shadowColor: "#000",
     shadowOpacity: 0.08,
     shadowOffset: { width: 0, height: 8 },
     shadowRadius: 20,

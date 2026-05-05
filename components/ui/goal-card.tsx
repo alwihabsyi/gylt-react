@@ -1,4 +1,5 @@
 import { Palette } from "@/constants/theme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
 import { formattedIntervalTarget, goalProgress, Goals } from "@/domain/Goals";
 import { getGoalDuration, parseFormattedDate } from "@/utils/formatter";
 import React from "react";
@@ -10,6 +11,7 @@ type GoalCardProps = {
 };
 
 export function GoalCard({ goals, onPress }: GoalCardProps) {
+  const colors = useSemanticColors();
   const progress = goalProgress(goals);
   const targetDate = parseFormattedDate(goals.targetDate);
   const createdAt = parseFormattedDate(goals.createdAt);
@@ -18,7 +20,7 @@ export function GoalCard({ goals, onPress }: GoalCardProps) {
 
   return (
     <Container
-      style={styles.card}
+      style={[styles.card, { backgroundColor: colors.surface }]}
       onPress={onPress}
       activeOpacity={onPress ? 0.9 : undefined}
       accessibilityRole={onPress ? "button" : undefined}
@@ -30,14 +32,16 @@ export function GoalCard({ goals, onPress }: GoalCardProps) {
       <View style={styles.content}>
         {/* Name + target date */}
         <View style={styles.header}>
-          <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+          <Text style={[styles.name, { color: colors.textPrimary }]} numberOfLines={1} ellipsizeMode="tail">
             {goals.name}
           </Text>
-          <Text style={styles.targetDate}>Target: {goals.targetDate}</Text>
+          <Text style={[styles.targetDate, { color: colors.textSecondary }]}>
+            Target: {goals.targetDate}
+          </Text>
         </View>
 
         {/* Progress bar */}
-        <View style={styles.progressTrack}>
+        <View style={[styles.progressTrack, { backgroundColor: colors.progressTrack }]}>
           <View
             style={[styles.progressFill, { width: `${progress}%` }]}
           />
@@ -45,20 +49,20 @@ export function GoalCard({ goals, onPress }: GoalCardProps) {
 
         {/* Stats row */}
         <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <Text style={styles.statLabel} numberOfLines={1}>
+          <View style={[styles.statBox, { backgroundColor: colors.surfaceInset }]}>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]} numberOfLines={1}>
               {goals.intervalType.charAt(0).toUpperCase() +
                 goals.intervalType.slice(1)}{" "}
               Target
             </Text>
-            <Text style={styles.statValue} numberOfLines={1}>
+            <Text style={[styles.statValue, { color: colors.textPrimary }]} numberOfLines={1}>
               {formattedIntervalTarget(goals)}
             </Text>
           </View>
 
-          <View style={styles.statBox}>
-            <Text style={styles.statLabel}>Time Left</Text>
-            <Text style={styles.statValue} numberOfLines={1}>
+          <View style={[styles.statBox, { backgroundColor: colors.surfaceInset }]}>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Time Left</Text>
+            <Text style={[styles.statValue, { color: colors.textPrimary }]} numberOfLines={1}>
               {createdAt && targetDate
                 ? getGoalDuration(createdAt, targetDate, goals.intervalType)
                 : "-"}
@@ -74,7 +78,6 @@ const styles = StyleSheet.create({
   card: {
     height: 200,
     borderRadius: 20,
-    backgroundColor: "#FFFFFF",
     flexDirection: "row",
     overflow: "hidden",
   },
@@ -94,17 +97,14 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#000",
   },
   targetDate: {
     fontSize: 12,
     fontWeight: "300",
-    color: "rgba(0,0,0,0.6)",
   },
   progressTrack: {
     height: 10,
     borderRadius: 5,
-    backgroundColor: "rgba(158,158,158,0.4)",
     marginTop: 4,
     overflow: "hidden",
   },
@@ -122,7 +122,6 @@ const styles = StyleSheet.create({
   statBox: {
     flex: 1,
     borderRadius: 15,
-    backgroundColor: "rgba(158,158,158,0.1)",
     padding: 10,
     alignItems: "center",
     justifyContent: "space-between",
@@ -130,11 +129,9 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#9E9E9E",
   },
   statValue: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#000",
   },
 });

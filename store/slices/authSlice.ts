@@ -1,5 +1,5 @@
 import { authService } from "@/services/authService";
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 type AuthState = {
   userId: string | null;
@@ -7,6 +7,7 @@ type AuthState = {
   fullName: string | null;
   loading: boolean;
   error: string | null;
+  createdAt: string | null;
 };
 
 const initialState: AuthState = {
@@ -15,6 +16,7 @@ const initialState: AuthState = {
   fullName: null,
   loading: false,
   error: null,
+  createdAt: null
 };
 
 export const signIn = createAsyncThunk(
@@ -41,6 +43,14 @@ export const signUp = createAsyncThunk(
   },
 );
 
+export const getUserData = createAsyncThunk(
+  "auth/userData",
+  async (id: string) => {
+    const user = await authService.userData(id);
+    return user;
+  },
+);
+
 export const signOut = createAsyncThunk("auth/signOut", async () => {
   await authService.signOut();
 });
@@ -49,22 +59,11 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setUser(
-      state,
-      action: PayloadAction<{
-        userId: string;
-        email: string | null;
-        fullName: string | null;
-      }>,
-    ) {
-      state.userId = action.payload.userId;
-      state.email = action.payload.email;
-      state.fullName = action.payload.fullName;
-    },
     clearUser(state) {
       state.userId = null;
       state.email = null;
       state.fullName = null;
+      state.createdAt = null
     },
   },
   extraReducers: (builder) => {
@@ -95,6 +94,13 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.error.message ?? "Sign up failed";
       })
+      .addCase(getUserData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.userId = action.payload.id;
+        state.email = action.payload.email;
+        state.fullName = action.payload.fullName;
+        state.createdAt = action.payload.createdAt;
+      })
       .addCase(signOut.fulfilled, (state) => {
         state.userId = null;
         state.email = null;
@@ -102,5 +108,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { setUser, clearUser } = authSlice.actions;
+export const { clearUser } = authSlice.actions;
 export default authSlice.reducer;

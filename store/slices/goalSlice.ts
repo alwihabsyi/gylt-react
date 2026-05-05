@@ -24,6 +24,14 @@ export const addGoal = createAsyncThunk(
   async (data: Omit<Goals, "id">) => goalService.add(data),
 );
 
+export const updateGoal = createAsyncThunk(
+  "goals/update",
+  async ({ id, data }: { id: string; data: Partial<Goals> }) => {
+    await goalService.update(id, data);
+    return { id, data };
+  },
+);
+
 export const deleteGoal = createAsyncThunk(
   "goals/delete",
   async (id: string) => {
@@ -63,9 +71,13 @@ const goalSlice = createSlice({
         state.items.unshift(action.payload);
       })
       .addCase(addGoal.rejected, (state, action) => {
-        console.log(action.error.message);
         state.loading = false;
         state.error = action.error.message ?? "Failed to add goal";
+      })
+      .addCase(updateGoal.fulfilled, (state, action) => {
+        const { id, data } = action.payload;
+        const index = state.items.findIndex((g) => g.id === id);
+        if (index !== -1) state.items[index] = { ...state.items[index], ...data };
       })
       .addCase(deleteGoal.fulfilled, (state, action) => {
         state.items = state.items.filter((g) => g.id !== action.payload);

@@ -1,5 +1,7 @@
 import { Palette } from "@/constants/theme";
-import { formatDateTime } from "@/utils/formatter";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { formatDateTime, formatNumber, unformatNumber } from "@/utils/formatter";
 import React, { useState } from "react";
 import {
   FlatList,
@@ -33,14 +35,6 @@ function isValueValid(fieldType: FieldType, value: string): boolean {
   return true;
 }
 
-const formatNumber = (val: string) => {
-  const digits = val.replace(/\D/g, '');
-  if (!digits) return '';
-  return parseInt(digits, 10).toLocaleString('en-EN');
-};
-
-const unformatNumber = (val: string) => val.replace(/\D/g, '');
-
 export function LabeledTextField({
   fieldType,
   label,
@@ -50,6 +44,10 @@ export function LabeledTextField({
   placeHolder,
   error
 }: LabeledTextFieldProps) {
+  const scheme = useColorScheme() ?? "light";
+  const colors = useSemanticColors();
+  const inputFill =
+    scheme === "dark" ? colors.surfaceMuted : colors.surface;
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -62,7 +60,7 @@ export function LabeledTextField({
     ? Palette.PoppyRed
     : isFocused
       ? Palette.EmeraldGreen
-      : "#D3D3D3";
+      : colors.borderLight;
 
   const handlePress = () => {
     if (fieldType.kind === 'date') {
@@ -73,31 +71,40 @@ export function LabeledTextField({
   };
 
   const TrailingIcon = () => {
+    const ti = [styles.trailingIcon, { color: colors.textPlaceholder }];
     if (fieldType.kind === "date")
-      return <Text style={styles.trailingIcon}>📅</Text>;
+      return <Text style={ti}>📅</Text>;
     if (fieldType.kind === "options")
-      return <Text style={styles.trailingIcon}>▾</Text>;
+      return <Text style={ti}>▾</Text>;
     return null;
   };
 
   return (
     <View style={styles.wrapper}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, { color: colors.textPrimary }]}>{label}</Text>
 
       <TouchableOpacity
         onPress={isReadOnly ? handlePress : undefined}
         activeOpacity={isReadOnly ? 0.7 : 1}
-        style={[styles.inputContainer, { borderColor }]}
+        style={[
+          styles.inputContainer,
+          { borderColor, backgroundColor: inputFill },
+        ]}
       >
-        {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
+        {prefix ? (
+          <Text style={[styles.prefix, { color: colors.textPlaceholder }]}>
+            {prefix}
+          </Text>
+        ) : null}
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, { color: colors.textPrimary }]}
           value={fieldType.kind === 'number' ? formatNumber(value) : value}
           editable={!isReadOnly}
           placeholder={placeHolder}
-          placeholderTextColor="#A0A0A0"
+          placeholderTextColor={colors.textPlaceholder}
           keyboardType={fieldType.kind === 'number' ? 'numeric' : 'default'}
+          keyboardAppearance={scheme === "dark" ? "dark" : "light"}
           onChangeText={(text) => {
             const raw = fieldType.kind === 'number' ? unformatNumber(text) : text;
             if (!isReadOnly && isValueValid(fieldType, raw)) {
@@ -133,23 +140,25 @@ export function LabeledTextField({
           onRequestClose={() => setShowDropdown(false)}
         >
           <TouchableOpacity
-            style={styles.modalOverlay}
+            style={[styles.modalOverlay, { backgroundColor: colors.overlayScrim }]}
             onPress={() => setShowDropdown(false)}
             activeOpacity={1}
           >
-            <View style={styles.dropdown}>
+            <View style={[styles.dropdown, { backgroundColor: colors.surface, shadowColor: colors.shadow }]}>
               <FlatList
                 data={fieldType.options}
                 keyExtractor={(item) => item}
                 renderItem={({ item }) => (
                   <TouchableOpacity
-                    style={styles.dropdownItem}
+                    style={[styles.dropdownItem, { borderBottomColor: colors.divider }]}
                     onPress={() => {
                       onValueChange(item);
                       setShowDropdown(false);
                     }}
                   >
-                    <Text style={styles.dropdownItemText}>{item}</Text>
+                    <Text style={[styles.dropdownItemText, { color: colors.textPrimary }]}>
+                      {item}
+                    </Text>
                   </TouchableOpacity>
                 )}
               />
@@ -168,7 +177,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#000",
   },
   inputContainer: {
     flexDirection: "row",
@@ -177,10 +185,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 15,
     paddingHorizontal: 14,
-    backgroundColor: "#FFFFFF",
   },
   prefix: {
-    color: "#A0A0A0",
     fontSize: 14,
     marginRight: 4,
   },
@@ -188,11 +194,9 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontWeight: "600",
-    color: "#000",
   },
   trailingIcon: {
     fontSize: 16,
-    color: "#A0A0A0",
     marginLeft: 8,
   },
   errorText: {
@@ -202,18 +206,15 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
     justifyContent: "center",
     alignItems: "center",
   },
   dropdown: {
-    backgroundColor: "#FFF",
     borderRadius: 12,
     width: 220,
     maxHeight: 240,
     overflow: "hidden",
     elevation: 6,
-    shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
@@ -222,40 +223,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
   },
   dropdownItemText: {
     fontSize: 14,
-    color: "#000",
-  },
-  datePickerCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    overflow: 'hidden',
-    marginHorizontal: 20,
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  datePickerActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 24,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-  },
-  cancelText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#A0A0A0',
-  },
-  confirmText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Palette.EmeraldGreen,
   },
 });

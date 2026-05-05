@@ -1,23 +1,28 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import { Palette } from "@/constants/theme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { Category } from "@/types/category";
 import { formatCurrency, getWeekRangeString } from "@/utils/formatter";
 
 type Props = {
   income: number;
   expense: number;
   username?: string;
+  onPress: (s: string) => void; 
 };
 
-export default function HomeHeader({ income, expense, username = "User" }: Props) {
+export default function HomeHeader({ income, expense, username = "User", onPress }: Props) {
+  const colors = useSemanticColors();
+
   return (
     <View style={styles.headerContainer}>
       {/* Greeting */}
       <View style={styles.greetingSection}>
-        <Text style={styles.helloText}>Hello,</Text>
-        <Text style={styles.userText}>{username}</Text>
+        <Text style={[styles.helloText, { color: colors.textPrimary }]}>Hello,</Text>
+        <Text style={[styles.userText, { color: colors.textPrimary }]}>{username}</Text>
       </View>
 
       {/* Summary Card */}
@@ -59,29 +64,34 @@ export default function HomeHeader({ income, expense, username = "User" }: Props
       </View>
 
       {/* Categories || Currently inactive */}
-      {/* <Text style={styles.sectionTitle}>Categories</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Categories</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.categoryRow}
       >
         {Object.values(Category).map((cat) => (
-          <View key={cat.title} style={styles.categoryItem}>
-            <View style={styles.categoryIconWrap}>
+          <TouchableOpacity
+            key={cat.title}
+            style={styles.categoryItem}
+            onPress={() => onPress(cat.title)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.categoryIconWrap, { backgroundColor: colors.surface }]}>
               <Ionicons
                 name={cat.iconName}
                 size={24}
                 color={Palette.EmeraldGreen}
               />
             </View>
-            <Text style={styles.categoryTitle} numberOfLines={1}>
+            <Text style={[styles.categoryTitle, { color: colors.textPrimary }]} numberOfLines={1}>
               {cat.title}
             </Text>
-          </View>
+          </TouchableOpacity>
         ))}
-      </ScrollView> */}
+      </ScrollView>
 
-      <Text style={styles.sectionTitle}>Recent Transactions</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Recent Transactions</Text>
     </View>
   );
 }
@@ -91,8 +101,8 @@ const styles = StyleSheet.create({
 
   // Greeting
   greetingSection: { marginVertical: 10 },
-  helloText: { fontSize: 24, fontWeight: "300", color: Palette.InkDark },
-  userText: { fontSize: 32, fontWeight: "bold", color: Palette.InkDark },
+  helloText: { fontSize: 24, fontWeight: "300" },
+  userText: { fontSize: 32, fontWeight: "bold" },
 
   // Summary Card
   summaryCard: {
@@ -134,21 +144,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: Palette.InkDark,
     marginBottom: 10,
   },
   categoryRow: { paddingBottom: 20, paddingRight: 5 },
   categoryItem: { width: 80, alignItems: "center" },
   categoryIconWrap: {
-    backgroundColor: Palette.StarkWhite,
     borderRadius: 10,
     padding: 15,
     marginBottom: 5,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 1,
   },
-  categoryTitle: { fontSize: 12, color: Palette.InkDark },
+  categoryTitle: { fontSize: 12 },
 });

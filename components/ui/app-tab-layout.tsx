@@ -1,4 +1,5 @@
 import { Palette } from "@/constants/theme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
 import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -8,6 +9,7 @@ type AppTabLayoutProps = {
 };
 
 export function AppTabLayout({ tabNames, renderContent }: AppTabLayoutProps) {
+  const colors = useSemanticColors();
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   return (
@@ -25,7 +27,9 @@ export function AppTabLayout({ tabNames, renderContent }: AppTabLayoutProps) {
               <Text
                 style={[
                   styles.tabText,
-                  { color: isSelected ? Palette.EmeraldGreen : "#9E9E9E" },
+                  {
+                    color: isSelected ? Palette.EmeraldGreen : colors.tabInactive,
+                  },
                 ]}
               >
                 {name}
@@ -36,7 +40,7 @@ export function AppTabLayout({ tabNames, renderContent }: AppTabLayoutProps) {
         })}
       </View>
 
-      <View style={styles.divider} />
+      <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
       {renderContent(selectedIndex)}
     </View>
@@ -70,6 +74,5 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: "#E0E0E0",
   },
 });

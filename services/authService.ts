@@ -1,3 +1,5 @@
+import { UserData } from "@/types/user";
+import { formatDateTime } from "@/utils/formatter";
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
@@ -5,7 +7,7 @@ import {
   signOut,
   User,
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebase/config";
 
 export const authService = {
@@ -19,7 +21,7 @@ export const authService = {
     await setDoc(doc(db, "users", result.user.uid), {
       fullName,
       email,
-      createdAt: new Date().toISOString(),
+      createdAt: formatDateTime(new Date()),
     });
 
     return result.user;
@@ -32,6 +34,14 @@ export const authService = {
 
   async signOut(): Promise<void> {
     await signOut(auth);
+  },
+
+  async userData(id: string): Promise<UserData> {
+    const result = await getDoc(doc(db, "users", id));
+
+    if (!result.exists()) throw new Error("User not found");
+    const data = result.data();
+    return { id, fullName: data.fullName, email: data.email, createdAt: data.createdAt };
   },
 
   onAuthStateChanged(callback: (user: User | null) => void) {

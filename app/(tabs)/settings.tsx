@@ -1,6 +1,11 @@
+import { AppRoutes } from "@/constants/routes";
 import { Palette } from "@/constants/theme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { toggleDarkMode } from "@/store/slices/themeSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ScrollView,
@@ -22,6 +27,7 @@ type SettingRowProps = {
 };
 
 function SettingRow({ icon, label, onPress, right }: SettingRowProps) {
+  const colors = useSemanticColors();
   return (
     <TouchableOpacity
       style={styles.row}
@@ -32,11 +38,11 @@ function SettingRow({ icon, label, onPress, right }: SettingRowProps) {
         <View style={styles.iconBox}>
           <Ionicons name={icon} size={18} color={Palette.EmeraldGreen} />
         </View>
-        <Text style={styles.rowLabel}>{label}</Text>
+        <Text style={[styles.rowLabel, { color: colors.textPrimary }]}>{label}</Text>
       </View>
       {right ??
         (onPress && (
-          <Ionicons name="chevron-forward" size={18} color="#C0C0C0" />
+          <Ionicons name="chevron-forward" size={18} color={colors.chevron} />
         ))}
     </TouchableOpacity>
   );
@@ -48,27 +54,40 @@ type SettingsSectionProps = {
 };
 
 function SettingsSection({ title, children }: SettingsSectionProps) {
+  const colors = useSemanticColors();
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <View style={styles.sectionCard}>{children}</View>
+      <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>{title}</Text>
+      <View style={[styles.sectionCard, { backgroundColor: colors.surface }]}>
+        {children}
+      </View>
     </View>
   );
 }
 
 function Separator() {
-  return <View style={styles.separator} />;
+  const colors = useSemanticColors();
+  return (
+    <View style={[styles.separator, { backgroundColor: colors.divider }]} />
+  );
 }
 
 export default function SettingsScreen() {
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-  const [currency, setCurrency] = useState("IDR");
+  const colors = useSemanticColors();
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const darkMode = useAppSelector((state) => state.theme.darkMode);
+  const { email, fullName } = useAppSelector((state) => state.auth);
 
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [currency, setCurrency] = useState("IDR");
   const currencies = ["IDR", "USD", "SGD", "EUR"];
 
+  const displayName = fullName ?? email?.split("@")[0] ?? "User";
+  const avatarLetter = displayName.charAt(0).toUpperCase();
+
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.screenGrey }]} edges={["top"]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.container}
@@ -82,9 +101,9 @@ export default function SettingsScreen() {
           style={styles.profileCard}
         >
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>U</Text>
+            <Text style={styles.avatarText}>{avatarLetter}</Text>
           </View>
-          <Text style={styles.username}>Username</Text>
+          <Text style={styles.username}>{displayName}</Text>
           <Text style={styles.userSubtitle}>Personal Finance & Wellbeing</Text>
         </LinearGradient>
 
@@ -93,7 +112,7 @@ export default function SettingsScreen() {
           <SettingRow
             icon="person-outline"
             label="Edit Profile"
-            onPress={() => {}}
+            onPress={() => router.push(AppRoutes.EditProfile)}
           />
           <Separator />
           <SettingRow
@@ -107,13 +126,18 @@ export default function SettingsScreen() {
                     onPress={() => setCurrency(c)}
                     style={[
                       styles.currencyOption,
+                      { borderColor: colors.border },
                       currency === c && styles.currencyOptionSelected,
                     ]}
                   >
                     <Text
                       style={[
                         styles.currencyText,
-                        currency === c && styles.currencyTextSelected,
+                        { color: colors.textMuted },
+                        currency === c && [
+                          styles.currencyTextSelected,
+                          { color: colors.inverseOnAccent },
+                        ],
                       ]}
                     >
                       {c}
@@ -134,8 +158,11 @@ export default function SettingsScreen() {
               <Switch
                 value={notificationsEnabled}
                 onValueChange={setNotificationsEnabled}
-                trackColor={{ false: "#D3D3D3", true: Palette.EmeraldGreen }}
-                thumbColor="#FFFFFF"
+                trackColor={{
+                  false: colors.switchTrackOff,
+                  true: Palette.EmeraldGreen,
+                }}
+                thumbColor={colors.switchThumb}
               />
             }
           />
@@ -146,9 +173,14 @@ export default function SettingsScreen() {
             right={
               <Switch
                 value={darkMode}
-                onValueChange={setDarkMode}
-                trackColor={{ false: "#D3D3D3", true: Palette.EmeraldGreen }}
-                thumbColor="#FFFFFF"
+                onValueChange={() => {
+                  dispatch(toggleDarkMode());
+                }}
+                trackColor={{
+                  false: colors.switchTrackOff,
+                  true: Palette.EmeraldGreen,
+                }}
+                thumbColor={colors.switchThumb}
               />
             }
           />
@@ -159,30 +191,60 @@ export default function SettingsScreen() {
           <SettingRow
             icon="information-circle-outline"
             label="Version"
-            right={<Text style={styles.versionText}>{APP_VERSION}</Text>}
+            right={
+              <Text style={[styles.versionText, { color: colors.textMuted }]}>
+                {APP_VERSION}
+              </Text>
+            }
           />
           <Separator />
           <SettingRow
             icon="document-text-outline"
             label="Privacy Policy"
-            onPress={() => {}}
+            onPress={() => router.push(AppRoutes.PrivacyPolicy)}
           />
           <Separator />
           <SettingRow
             icon="mail-outline"
             label="Contact Us"
-            onPress={() => {}}
+            onPress={() => router.push(AppRoutes.ContactUs)}
           />
         </SettingsSection>
 
         {/* Danger Zone */}
-        <View style={styles.sectionCard}>
+        <View style={[styles.sectionCard, { backgroundColor: colors.surface }]}>
+          <TouchableOpacity
+            style={styles.row}
+            activeOpacity={0.7}
+            onPress={() => router.push(AppRoutes.DeleteAccount)}
+          >
+            <View style={styles.rowLeft}>
+              <View
+                style={[
+                  styles.iconBox,
+                  { backgroundColor: colors.surfaceDangerTint },
+                ]}
+              >
+                <Ionicons name="trash-outline" size={18} color={colors.danger} />
+              </View>
+              <Text style={[styles.rowLabel, { color: colors.danger }]}>
+                Delete Account
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.danger} />
+          </TouchableOpacity>
+          <Separator />
           <TouchableOpacity style={styles.row} activeOpacity={0.7}>
             <View style={styles.rowLeft}>
-              <View style={[styles.iconBox, { backgroundColor: "#FFF0F0" }]}>
-                <Ionicons name="log-out-outline" size={18} color="#E53935" />
+              <View
+                style={[
+                  styles.iconBox,
+                  { backgroundColor: colors.surfaceDangerTint },
+                ]}
+              >
+                <Ionicons name="log-out-outline" size={18} color={colors.danger} />
               </View>
-              <Text style={[styles.rowLabel, { color: "#E53935" }]}>
+              <Text style={[styles.rowLabel, { color: colors.danger }]}>
                 Sign Out
               </Text>
             </View>
@@ -194,17 +256,9 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#F5F5F5",
-  },
-  scroll: {
-    flex: 1,
-  },
-  container: {
-    padding: 20,
-    gap: 20,
-  },
+  safeArea: { flex: 1 },
+  scroll: { flex: 1 },
+  container: { padding: 20, gap: 20 },
   profileCard: {
     height: 160,
     borderRadius: 15,
@@ -221,37 +275,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 4,
   },
-  avatarText: {
-    color: "#FFFFFF",
-    fontSize: 22,
-    fontWeight: "700",
-  },
-  username: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "700",
-    letterSpacing: 1,
-  },
-  userSubtitle: {
-    color: "rgba(255,255,255,0.75)",
-    fontSize: 12,
-  },
-  section: {
-    gap: 8,
-  },
+  avatarText: { color: "#FFFFFF", fontSize: 22, fontWeight: "700" },
+  username: { color: "#FFFFFF", fontSize: 18, fontWeight: "700", letterSpacing: 1 },
+  userSubtitle: { color: "rgba(255,255,255,0.75)", fontSize: 12 },
+  section: { gap: 8 },
   sectionTitle: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#9E9E9E",
     textTransform: "uppercase",
     letterSpacing: 1,
     paddingHorizontal: 4,
   },
-  sectionCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 15,
-    overflow: "hidden",
-  },
+  sectionCard: { borderRadius: 15, overflow: "hidden" },
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -259,11 +294,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
-  rowLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
+  rowLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
   iconBox: {
     width: 32,
     height: 32,
@@ -272,41 +303,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  rowLabel: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: "#000",
-  },
-  separator: {
-    height: 1,
-    backgroundColor: "#F0F0F0",
-    marginLeft: 60,
-  },
-  currencyPicker: {
-    flexDirection: "row",
-    gap: 6,
-  },
+  rowLabel: { fontSize: 15, fontWeight: "500" },
+  separator: { height: 1, marginLeft: 60 },
+  currencyPicker: { flexDirection: "row", gap: 6 },
   currencyOption: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
   },
   currencyOptionSelected: {
     backgroundColor: Palette.EmeraldGreen,
     borderColor: Palette.EmeraldGreen,
   },
-  currencyText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#9E9E9E",
-  },
-  currencyTextSelected: {
-    color: "#FFFFFF",
-  },
-  versionText: {
-    fontSize: 14,
-    color: "#9E9E9E",
-  },
+  currencyText: { fontSize: 12, fontWeight: "600" },
+  currencyTextSelected: {},
+  versionText: { fontSize: 14 },
 });

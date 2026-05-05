@@ -1,4 +1,6 @@
 import { Palette } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -20,10 +22,14 @@ export function RoundedItemCard({
     isSelected,
     onClick,
 }: RoundedItemCardProps) {
+    const scheme = useColorScheme() ?? "light";
+    const colors = useSemanticColors();
+    const idleSurface =
+        scheme === "dark" ? colors.surfaceMuted : colors.surface;
     const containerColor = isSelected
-        ? `${Palette.EmeraldGreen}1A` // ~10% alpha hex
-        : "#FFFFFF";
-    const borderColor = isSelected ? Palette.EmeraldGreen : "#D3D3D3";
+        ? `${Palette.EmeraldGreen}1A`
+        : idleSurface;
+    const borderColor = isSelected ? Palette.EmeraldGreen : colors.borderLight;
 
     return (
         <TouchableOpacity
@@ -42,10 +48,11 @@ export function RoundedItemCard({
                     name={icon}
                     size={24}
                     color={Palette.EmeraldGreen}
+                    style={[{marginBottom: 5}]}
                 />
             )}
             <Text
-                style={[styles.text, { fontWeight: isSelected ? "600" : "400" }]}
+                style={[styles.text, { fontWeight: isSelected ? "600" : "400", color: colors.textPrimary }]}
                 numberOfLines={1}
                 ellipsizeMode="tail"
             >
@@ -73,6 +80,5 @@ const styles = StyleSheet.create({
     },
     text: {
         fontSize: 12,
-        color: "#000000",
     },
 });

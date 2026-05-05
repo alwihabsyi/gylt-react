@@ -1,3 +1,5 @@
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
 import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -9,6 +11,8 @@ interface Props {
 }
 
 export default function DateTimePickerModal({ value, onChange, onClose }: Props) {
+  const scheme = useColorScheme() ?? "light";
+  const colors = useSemanticColors();
   const [tempDate, setTempDate] = useState(value);
   const [step, setStep] = useState<"date" | "time">("date");
 
@@ -36,22 +40,33 @@ export default function DateTimePickerModal({ value, onChange, onClose }: Props)
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
-      <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
-        <TouchableOpacity activeOpacity={1} style={styles.card}>
+      <TouchableOpacity
+        style={[styles.overlay, { backgroundColor: colors.overlayScrim }]}
+        activeOpacity={1}
+        onPress={onClose}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          style={[styles.card, { backgroundColor: colors.surface }]}
+        >
           <DateTimePicker
             value={tempDate}
             mode={step}
             display="spinner"
-            themeVariant="light"
+            themeVariant={scheme === "dark" ? "dark" : "light"}
             minimumDate={step === "date" ? new Date() : undefined}
-            onChange={(_, date) => { if (date) setTempDate(date); }}
+            onChange={(_, date) => {
+              if (date) setTempDate(date);
+            }}
           />
-          <View style={styles.actions}>
+          <View style={[styles.actions, { borderTopColor: colors.divider }]}>
             <TouchableOpacity onPress={onClose}>
-              <Text style={styles.cancel}>Cancel</Text>
+              <Text style={[styles.cancel, { color: colors.textMuted }]}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={handleConfirm}>
-              <Text style={styles.confirm}>{step === "date" ? "Next" : "OK"}</Text>
+              <Text style={[styles.confirm, { color: colors.iosBlue }]}>
+                {step === "date" ? "Next" : "OK"}
+              </Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -63,12 +78,10 @@ export default function DateTimePickerModal({ value, onChange, onClose }: Props)
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "center",
     alignItems: "center",
   },
   card: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 16,
     width: "85%",
@@ -78,14 +91,14 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     gap: 24,
     paddingTop: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    marginTop: 8,
   },
   cancel: {
     fontSize: 16,
-    color: "#888",
   },
   confirm: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#007AFF",
   },
 });

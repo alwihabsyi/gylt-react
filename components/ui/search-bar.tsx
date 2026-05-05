@@ -1,32 +1,41 @@
 import { Palette } from "@/constants/theme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
-import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import React from "react";
+import { StyleSheet, TextInput, View } from "react-native";
 
 interface SearchBarProps {
   placeholder?: string;
+  value: string;
   onSearch: (query: string) => void;
 }
 
 export default function SearchBar({
   placeholder = "Search...",
+  value,
   onSearch,
 }: SearchBarProps) {
-  const [query, setQuery] = useState("");
-
+  const colors = useSemanticColors();
   return (
     <View style={styles.container}>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.borderHairline,
+            color: colors.textPrimary,
+          },
+        ]}
         placeholder={placeholder}
-        placeholderTextColor="gray"
-        value={query}
-        onChangeText={setQuery}
-        onSubmitEditing={() => onSearch(query)} // Triggers on keyboard "enter"
+        placeholderTextColor={colors.textMuted}
+        value={value}
+        onChangeText={onSearch}
+        returnKeyType="search"
       />
-      <TouchableOpacity style={styles.button} onPress={() => onSearch(query)}>
-        <Ionicons name="search" size={24} color="#FFF" />
-      </TouchableOpacity>
+      <View style={styles.button}>
+        <Ionicons name="search" size={24} color={colors.inverseOnAccent} />
+      </View>
     </View>
   );
 }
@@ -36,10 +45,8 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 56,
-    backgroundColor: "#FFF",
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: "lightgray",
     paddingHorizontal: 16,
     fontSize: 16,
   },

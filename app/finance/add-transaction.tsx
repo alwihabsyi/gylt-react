@@ -2,6 +2,7 @@ import { LabeledTextField } from "@/components/ui/labeled-text-field";
 import { RoundedItemCard } from "@/components/ui/rounded-item-card";
 import { SimpleGrid } from "@/components/ui/simple-grid";
 import { Palette } from "@/constants/theme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addActivity, clearError } from "@/store/slices/activitySlice";
 import { Activity, ActivityType, ALL_ACTIVITY_TYPES } from "@/types/activity";
@@ -28,6 +29,7 @@ type Props = {
 };
 
 export default function AddTransactionScreen({ onBack }: Props) {
+  const colors = useSemanticColors();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((state) => state.transactions);
@@ -103,7 +105,7 @@ export default function AddTransactionScreen({ onBack }: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.screenGrey }]} edges={["top"]}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.container}
@@ -118,7 +120,11 @@ export default function AddTransactionScreen({ onBack }: Props) {
                 key={type}
                 style={[
                   styles.typeButton,
-                  { backgroundColor: selected ? Palette.EmeraldGreen : "#FFFFFF" },
+                  {
+                    backgroundColor: selected
+                      ? Palette.EmeraldGreen
+                      : colors.surface,
+                  },
                 ]}
                 onPress={() => handleTypeChange(type)}
                 activeOpacity={0.8}
@@ -126,7 +132,11 @@ export default function AddTransactionScreen({ onBack }: Props) {
                 <Text
                   style={[
                     styles.typeButtonText,
-                    { color: selected ? "#FFFFFF" : "#000000" },
+                    {
+                      color: selected
+                        ? colors.inverseOnAccent
+                        : colors.textPrimary,
+                    },
                   ]}
                 >
                   {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -137,7 +147,7 @@ export default function AddTransactionScreen({ onBack }: Props) {
         </View>
 
         {/* Form Card */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <LabeledTextField
             fieldType={{ kind: "number" }}
             label="Amount"
@@ -149,7 +159,9 @@ export default function AddTransactionScreen({ onBack }: Props) {
 
           {selectedType === ActivityType.Expense && (
             <View style={styles.categorySection}>
-              <Text style={styles.sectionLabel}>Category</Text>
+              <Text style={[styles.sectionLabel, { color: colors.textPrimary }]}>
+                Category
+              </Text>
               <SimpleGrid
                 items={ALL_CATEGORIES}
                 columns={3}
@@ -208,7 +220,7 @@ export default function AddTransactionScreen({ onBack }: Props) {
             activeOpacity={0.85}
             disabled={loading}
           >
-            <Text style={styles.submitButtonText}>
+            <Text style={[styles.submitButtonText, { color: colors.inverseOnAccent }]}>
               {loading
                 ? "Saving…"
                 : `Add ${selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}`}
@@ -223,7 +235,6 @@ export default function AddTransactionScreen({ onBack }: Props) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
   },
   scroll: {
     flex: 1,
@@ -248,7 +259,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   card: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 15,
     padding: 20,
     gap: 20,
@@ -259,7 +269,6 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#000",
   },
   submitButton: {
     marginTop: 10,
@@ -273,7 +282,6 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitButtonText: {
-    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
   },

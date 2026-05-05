@@ -1,5 +1,6 @@
 // components/finance/FinanceCard.tsx
 import { Palette } from "@/constants/theme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
 import { Activity, ActivityType } from "@/types/activity";
 import { formatCurrency } from "@/utils/formatter";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,12 +12,13 @@ interface FinanceCardProps {
 }
 
 export default function FinanceCard({ activity }: FinanceCardProps) {
+  const colors = useSemanticColors();
   const isIncome = activity.type === ActivityType.Income;
   const symbol = isIncome ? "+" : "-";
   const amountColor = isIncome ? Palette.EmeraldGreen : Palette.PoppyRed;
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.surface, shadowColor: colors.shadow }]}>
       {/* Icon */}
       <View style={styles.iconContainer}>
         <Ionicons
@@ -28,10 +30,10 @@ export default function FinanceCard({ activity }: FinanceCardProps) {
 
       {/* Title & Category */}
       <View style={styles.details}>
-        <Text style={styles.title} numberOfLines={1}>
+        <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={1}>
           {activity.name}
         </Text>
-        <Text style={styles.category}>{activity.category.title}</Text>
+        <Text style={[styles.category, { color: colors.textMuted }]}>{activity.category.title}</Text>
       </View>
 
       {/* Amount & Date */}
@@ -40,7 +42,7 @@ export default function FinanceCard({ activity }: FinanceCardProps) {
           {symbol}
           {formatCurrency(activity.amount)}
         </Text>
-        <Text style={styles.date}>{activity.createdAt}</Text>
+        <Text style={[styles.date, { color: colors.textMuted }]}>{activity.createdAt}</Text>
       </View>
     </View>
   );
@@ -49,14 +51,12 @@ export default function FinanceCard({ activity }: FinanceCardProps) {
 const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
-    backgroundColor: "#FFFFFF",
     borderRadius: 20,
     padding: 15,
     minHeight: 50,
     alignItems: "center",
     marginBottom: 10,
     // iOS Shadow
-    shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 8,
@@ -73,11 +73,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: "600",
-    color: Palette.InkDark,
     marginBottom: 4,
   },
-  category: { fontSize: 12, fontWeight: "300", color: "gray" },
+  category: { fontSize: 12, fontWeight: "300" },
   amounts: { alignItems: "flex-end", justifyContent: "center" },
   amountText: { fontSize: 16, fontWeight: "600", marginBottom: 4 },
-  date: { fontSize: 12, fontWeight: "300", color: "gray" },
+  date: { fontSize: 12, fontWeight: "300" },
 });

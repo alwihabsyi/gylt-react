@@ -1,12 +1,13 @@
-import { Palette } from "@/constants/theme";
+import { Palette, type SemanticColorScheme } from "@/constants/theme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useRef, useState } from "react";
 import {
-    Animated,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 interface SpeedDialFabProps {
@@ -18,6 +19,7 @@ export default function SpeedDialFab({
   onAddTransactionClick,
   onViewStatsClick,
 }: SpeedDialFabProps) {
+  const colors = useSemanticColors();
   const [expanded, setExpanded] = useState(false);
   const animation = useRef(new Animated.Value(0)).current;
 
@@ -51,6 +53,7 @@ export default function SpeedDialFab({
         pointerEvents={expanded ? "auto" : "none"}
       >
         <Option
+          colors={colors}
           text="Analytics"
           icon="stats-chart"
           onPress={() => {
@@ -59,6 +62,7 @@ export default function SpeedDialFab({
           }}
         />
         <Option
+          colors={colors}
           text="Add Transaction"
           icon="receipt"
           onPress={() => {
@@ -71,9 +75,9 @@ export default function SpeedDialFab({
       {/* Main FAB */}
       <TouchableOpacity activeOpacity={0.8} onPress={toggleDial}>
         <Animated.View
-          style={[styles.fab, { transform: [{ rotate: rotation }] }]}
+          style={[styles.fab, { transform: [{ rotate: rotation }], shadowColor: colors.shadow }]}
         >
-          <Ionicons name="add" size={32} color="#FFF" />
+          <Ionicons name="add" size={32} color={colors.inverseOnAccent} />
         </Animated.View>
       </TouchableOpacity>
     </View>
@@ -82,20 +86,32 @@ export default function SpeedDialFab({
 
 // Small helper component for the sub-options
 const Option = ({
+  colors,
   text,
   icon,
   onPress,
 }: {
+  colors: SemanticColorScheme;
   text: string;
-  icon: any;
+  icon: React.ComponentProps<typeof Ionicons>["name"];
   onPress: () => void;
 }) => (
   <View style={styles.optionRow}>
-    <View style={styles.optionLabel}>
-      <Text style={styles.optionText}>{text}</Text>
+    <View
+      style={[
+        styles.optionLabel,
+        {
+          backgroundColor: colors.fabLabelBg,
+          borderColor: colors.fabLabelBorder,
+        },
+      ]}
+    >
+      <Text style={[styles.optionText, { color: colors.fabLabelText }]}>
+        {text}
+      </Text>
     </View>
     <TouchableOpacity style={styles.smallFab} onPress={onPress}>
-      <Ionicons name={icon} size={20} color="#FFF" />
+      <Ionicons name={icon} size={20} color={colors.inverseOnAccent} />
     </TouchableOpacity>
   </View>
 );
@@ -110,15 +126,10 @@ const styles = StyleSheet.create({
   optionsContainer: { alignItems: "flex-end", marginBottom: 16, gap: 12 },
   optionRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   optionLabel: {
-    backgroundColor: "#FFF",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 2,
+    borderWidth: 1,
   },
   optionText: { fontSize: 14, fontWeight: "500" },
   smallFab: {
@@ -137,7 +148,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     elevation: 4,
-    shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,

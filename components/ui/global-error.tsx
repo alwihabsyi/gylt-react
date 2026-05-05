@@ -3,6 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View, type ViewStyle } from "react-
 
 import GlobalLoading from "@/components/ui/global-loading";
 import { Palette } from "@/constants/theme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
 import { useThemeColor } from "@/hooks/use-theme-color";
 
 export type GlobalErrorProps = {
@@ -32,6 +33,7 @@ export default function GlobalError({
   style,
 }: GlobalErrorProps) {
   const tint = useThemeColor({}, "tint");
+  const colors = useSemanticColors();
 
   const containerStyle = [
     styles.container,
@@ -41,18 +43,30 @@ export default function GlobalError({
 
   return (
     <View style={containerStyle}>
-      <View style={styles.card}>
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.surface, shadowColor: colors.shadow },
+        ]}
+      >
         <View style={styles.iconWrap} accessibilityRole="image">
           <Text style={styles.icon}>!</Text>
         </View>
 
-        <Text style={styles.title}>{title}</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
 
-        {!!message && <Text style={styles.message}>{message}</Text>}
+        {!!message && (
+          <Text style={[styles.message, { color: colors.textSecondary }]}>
+            {message}
+          </Text>
+        )}
 
         {onAction && (
           <TouchableOpacity
-            style={[styles.button, { borderColor: tint }]}
+            style={[
+              styles.button,
+              { borderColor: tint, backgroundColor: colors.surface },
+            ]}
             onPress={onAction}
             activeOpacity={0.85}
             disabled={actionLoading}
@@ -89,14 +103,12 @@ const styles = StyleSheet.create({
   card: {
     width: "100%",
     maxWidth: 380,
-    backgroundColor: Palette.SurfaceLight,
     borderRadius: 16,
     paddingVertical: 22,
     paddingHorizontal: 18,
     alignItems: "center",
     justifyContent: "center",
 
-    shadowColor: "#000",
     shadowOpacity: 0.08,
     shadowOffset: { width: 0, height: 8 },
     shadowRadius: 20,
@@ -120,13 +132,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: "800",
-    color: Palette.AppColor,
     textAlign: "center",
     marginBottom: 6,
   },
   message: {
     fontSize: 13,
-    color: Palette.Black1,
     textAlign: "center",
     lineHeight: 18,
   },
@@ -138,7 +148,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: Palette.SurfaceLight,
     paddingHorizontal: 14,
   },
   buttonLoadingRow: {

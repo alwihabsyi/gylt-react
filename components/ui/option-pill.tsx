@@ -1,4 +1,5 @@
 import { Palette } from "@/constants/theme";
+import { useSemanticColors } from "@/hooks/use-semantic-colors";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
@@ -13,6 +14,7 @@ export default function OptionPill({
   isSelected,
   onItemSelected,
 }: OptionPillProps) {
+  const colors = useSemanticColors();
   return (
     <TouchableOpacity
       activeOpacity={0.7}
@@ -22,12 +24,18 @@ export default function OptionPill({
         {
           backgroundColor: isSelected
             ? Palette.EmeraldGreen
-            : Palette.CardSurface,
-          borderColor: isSelected ? Palette.EmeraldGreen : "lightgray",
+            : colors.surface,
+          borderColor: isSelected ? Palette.EmeraldGreen : colors.borderHairline,
+          shadowColor: colors.shadow,
         },
       ]}
     >
-      <Text style={[styles.text, { color: isSelected ? "#FFF" : "#000" }]}>
+      <Text
+        style={[
+          styles.text,
+          { color: isSelected ? colors.inverseOnAccent : colors.textPrimary },
+        ]}
+      >
         {optionName}
       </Text>
     </TouchableOpacity>
@@ -41,7 +49,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     elevation: 1, // Android shadow
-    shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 1 },
     shadowRadius: 2, // iOS shadow
