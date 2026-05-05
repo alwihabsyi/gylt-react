@@ -20,6 +20,18 @@ export default function Root({ children }: PropsWithChildren) {
                 {/* Service worker registration */}
                 <script dangerouslySetInnerHTML={{ __html: sw }} />
 
+                <style dangerouslySetInnerHTML={{
+                    __html: `
+                input, textarea, select {
+                    outline: none !important;
+                    -webkit-tap-highlight-color: transparent;
+                }
+                * {
+                    -webkit-tap-highlight-color: transparent;
+                }
+                ` }}
+                />
+
                 <ScrollViewStyleReset />
             </head>
             <body>{children}</body>
