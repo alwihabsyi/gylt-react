@@ -16,6 +16,7 @@ import GlobalEmptyState from "@/components/ui/global-empty-state";
 import { AppRoutes } from "@/constants/routes";
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useAppSelector } from "@/store/hooks";
 import { ALL_CATEGORIES } from "@/types/category";
 import { getTotals } from "@/utils/activity";
@@ -24,6 +25,7 @@ import { formatCurrency } from "@/utils/formatter";
 
 export default function CategoryTransactionsScreen() {
     const colors = useSemanticColors();
+    const { t } = useTranslation();
     const router = useRouter();
     const { category: categoryTitle } = useLocalSearchParams<{
         category: string;
@@ -67,7 +69,9 @@ export default function CategoryTransactionsScreen() {
                             color={Palette.EmeraldGreen}
                         />
                     </View>
-                    <Text style={[styles.title, { color: colors.textPrimary }]}>{categoryTitle}</Text>
+                    <Text style={[styles.title, { color: colors.textPrimary }]}>
+                        {categoryTitle ?? t("category.titleFallback")}
+                    </Text>
                 </View>
             </View>
 
@@ -76,7 +80,9 @@ export default function CategoryTransactionsScreen() {
                 <View style={styles.summaryItem}>
                     <Ionicons name="arrow-down" size={14} color={Palette.EmeraldGreen} />
                     <View>
-                        <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Income</Text>
+                        <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>
+                            {t("category.income")}
+                        </Text>
                         <Text style={[styles.summaryAmount, { color: Palette.EmeraldGreen }]}>
                             {formatCurrency(income)}
                         </Text>
@@ -88,7 +94,9 @@ export default function CategoryTransactionsScreen() {
                 <View style={styles.summaryItem}>
                     <Ionicons name="arrow-up" size={14} color={Palette.PoppyRed} />
                     <View>
-                        <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Expenses</Text>
+                        <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>
+                            {t("category.expenses")}
+                        </Text>
                         <Text style={[styles.summaryAmount, { color: Palette.PoppyRed }]}>
                             {formatCurrency(expense)}
                         </Text>
@@ -100,7 +108,9 @@ export default function CategoryTransactionsScreen() {
                 <View style={styles.summaryItem}>
                     <Ionicons name="list-outline" size={14} color={Palette.InkMuted} />
                     <View>
-                        <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Transactions</Text>
+                        <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>
+                            {t("category.transactions")}
+                        </Text>
                         <Text style={[styles.summaryAmount, { color: colors.textPrimary }]}>
                             {filtered.length}
                         </Text>
@@ -117,16 +127,20 @@ export default function CategoryTransactionsScreen() {
                 showsVerticalScrollIndicator={false}
                 ListHeaderComponent={
                     <View style={styles.subRow}>
-                        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>All Transactions</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+                            {t("category.allTransactions")}
+                        </Text>
                         <MonthFilterChip value={dateFilter} onChange={setDateFilter} />
                     </View>
                 }
                 ListEmptyComponent={
                     <GlobalEmptyState
                         icon={categoryDef ? undefined : "📂"}
-                        title={`No ${categoryTitle} transactions`}
-                        message="Transactions in this category will appear here."
-                        actionLabel="Add transaction"
+                        title={t("category.noTransactionsTitle", {
+                            name: categoryTitle ?? t("category.titleFallback"),
+                        })}
+                        message={t("category.noTransactionsMessage")}
+                        actionLabel={t("finance.addTransaction")}
                         onAction={() => router.push(AppRoutes.AddTransaction)}
                     />
                 }

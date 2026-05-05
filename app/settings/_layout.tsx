@@ -7,6 +7,7 @@ export default function SettingsLayout() {
       <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
       <Stack.Screen name="contact-us" options={{ headerShown: false }} />
       <Stack.Screen name="delete-account" options={{ headerShown: false }} />
+      <Stack.Screen name="support" options={{ headerShown: false }} />
     </Stack>
   );
 }

@@ -1,6 +1,7 @@
-import { MONTHS_FULL } from "@/constants/constants";
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { TranslationKey } from "@/locales";
 import { formatCurrency } from "@/utils/formatter";
 import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -8,10 +9,12 @@ import MonthFilterChip, { MonthFilter } from "../finance/month-filter-chip";
 import OptionPill from "../ui/option-pill";
 import SearchBar from "../ui/search-bar";
 
+export type FinanceFilterOption = { value: string; label: string };
+
 type Props = {
     income: number;
     expense: number;
-    filterOptions: string[];
+    filterOptions: FinanceFilterOption[];
     selectedFilter: string;
     setSelectedFilter: (name: string) => void;
     searchQuery: string;
@@ -27,23 +30,33 @@ export default function FinanceHeader({
     dateFilter, onDateChange,
 }: Props) {
     const colors = useSemanticColors();
+    const { t } = useTranslation();
+    const monthFullKey =
+        dateFilter.month !== null
+            ? (`months.full.${dateFilter.month}` as TranslationKey)
+            : null;
     const periodLabel =
         dateFilter.month === null
-            ? `All of ${dateFilter.year}`
-            : `${MONTHS_FULL[dateFilter.month]} ${dateFilter.year}`;
+            ? t("finance.periodAllYear", { year: dateFilter.year })
+            : `${monthFullKey ? t(monthFullKey) : ""} ${dateFilter.year}`;
 
     return (
         <View style={styles.headerContainer}>
-            <SearchBar value={searchQuery} onSearch={setSearchQuery} placeholder="Search transactions…" />
+            <SearchBar
+                value={searchQuery}
+                onSearch={setSearchQuery}
+                placeholder={t("finance.searchPlaceholder")}
+            />
 
             <View style={styles.spacer20} />
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillsRow}>
                 {filterOptions.map((option) => (
                     <OptionPill
-                        key={option}
-                        optionName={option}
-                        isSelected={selectedFilter === option}
+                        key={option.value}
+                        optionName={option.value}
+                        displayLabel={option.label}
+                        isSelected={selectedFilter === option.value}
                         onItemSelected={setSelectedFilter}
                     />
                 ))}

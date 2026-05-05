@@ -11,7 +11,6 @@ import {
 
 import AuthBackground from "@/components/layout/auth-background";
 import GradientButton from "@/components/ui/gradient-button";
-import SocialButton from "@/components/ui/social-button";
 import StealthField from "@/components/ui/stealth-field";
 import { AppRoutes } from "@/constants/routes";
 import { Palette } from "@/constants/theme";
@@ -144,7 +143,8 @@ export default function SignUpScreen() {
 
         <View style={styles.spacer24} />
 
-        <View style={styles.dividerRow}>
+        {/* Disable Google sign up for now */}
+        {/* <View style={styles.dividerRow}>
           <View style={styles.dividerLine} />
           <Text style={styles.dividerText}> or </Text>
           <View style={styles.dividerLine} />
@@ -152,7 +152,7 @@ export default function SignUpScreen() {
 
         <View style={styles.spacer20} />
 
-        <SocialButton onPress={() => console.log("Google Sign Up")} />
+        <SocialButton onPress={() => console.log("Google Sign Up")} /> */}
 
         <View style={styles.spacer36} />
 

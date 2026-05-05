@@ -1,5 +1,6 @@
 import { Palette, type SemanticColorScheme } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useRef, useState } from "react";
 import {
@@ -20,6 +21,7 @@ export default function SpeedDialFab({
   onViewStatsClick,
 }: SpeedDialFabProps) {
   const colors = useSemanticColors();
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const animation = useRef(new Animated.Value(0)).current;
 
@@ -54,7 +56,7 @@ export default function SpeedDialFab({
       >
         <Option
           colors={colors}
-          text="Analytics"
+          text={t("fab.analytics")}
           icon="stats-chart"
           onPress={() => {
             toggleDial();
@@ -63,7 +65,7 @@ export default function SpeedDialFab({
         />
         <Option
           colors={colors}
-          text="Add Transaction"
+          text={t("fab.addTransaction")}
           icon="receipt"
           onPress={() => {
             toggleDial();

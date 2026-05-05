@@ -5,12 +5,15 @@ import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
 interface OptionPillProps {
   optionName: string;
+  /** Shown in the pill; selection still uses `optionName`. */
+  displayLabel?: string;
   isSelected: boolean;
   onItemSelected: (name: string) => void;
 }
 
 export default function OptionPill({
   optionName,
+  displayLabel,
   isSelected,
   onItemSelected,
 }: OptionPillProps) {
@@ -36,7 +39,7 @@ export default function OptionPill({
           { color: isSelected ? colors.inverseOnAccent : colors.textPrimary },
         ]}
       >
-        {optionName}
+        {displayLabel ?? optionName}
       </Text>
     </TouchableOpacity>
   );

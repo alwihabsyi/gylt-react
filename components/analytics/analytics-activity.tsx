@@ -1,20 +1,25 @@
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
 import { StyleSheet, Text, View } from "react-native";
 
 type Props = { thisMonth: number; lastMonth: number; allTime: number };
 
 export default function AnalyticsActivity({ thisMonth, lastMonth, allTime }: Props) {
     const colors = useSemanticColors();
+    const { t } = useTranslation();
+    const rows = [
+        { n: thisMonth, label: t("analytics.activityThisMonth"), key: "tm" },
+        { n: lastMonth, label: t("analytics.activityLastMonth"), key: "lm" },
+        { n: allTime, label: t("analytics.activityAllTime"), key: "at" },
+    ];
     return (
         <View style={[s.card, { backgroundColor: colors.surface, shadowColor: colors.shadow }]}>
-            <Text style={[s.title, { color: colors.textPrimary }]}>Activity</Text>
+            <Text style={[s.title, { color: colors.textPrimary }]}>
+                {t("analytics.activityTitle")}
+            </Text>
             <View style={s.row}>
-                {[
-                    { n: thisMonth, label: "This month" },
-                    { n: lastMonth, label: "Last month" },
-                    { n: allTime, label: "All time" },
-                ].map(({ n, label }, i) => (
-                    <View key={label} style={{ flexDirection: "row", flex: 1 }}>
+                {rows.map(({ n, label, key }, i) => (
+                    <View key={key} style={{ flexDirection: "row", flex: 1 }}>
                         {i > 0 && (
                             <View style={[s.divider, { backgroundColor: colors.divider }]} />
                         )}

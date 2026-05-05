@@ -12,13 +12,14 @@ import AnalyticsStatRow from "@/components/analytics/analytics-stat-row";
 import MonthFilterChip, { MonthFilter } from "@/components/finance/month-filter-chip";
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { TranslationKey } from "@/locales";
 import { useAppSelector } from "@/store/hooks";
 import { ActivityType } from "@/types/activity";
 import { ALL_CATEGORIES } from "@/types/category";
 import { getTotals } from "@/utils/activity";
 import { matchesDateFilter } from "@/utils/analytics-util";
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const CATEGORY_COLORS = [
   Palette.EmeraldGreen,
   Palette.OceanBlue,
@@ -34,6 +35,7 @@ function getLastMonth(m: number, y: number): { month: number; year: number } {
 
 export default function AnalyticsScreen() {
   const colors = useSemanticColors();
+  const { t } = useTranslation();
   const router = useRouter();
   const { items } = useAppSelector((state) => state.transactions);
 
@@ -80,8 +82,12 @@ export default function AnalyticsScreen() {
     return best?.amount > 0 ? best : undefined;
   }, [thisPeriod]);
 
+  const monthFullKey =
+    dateFilter.month !== null ? (`months.full.${dateFilter.month}` as TranslationKey) : null;
   const periodLabel =
-    dateFilter.month === null ? `All of ${dateFilter.year}` : `${MONTHS[dateFilter.month]} ${dateFilter.year}`;
+    dateFilter.month === null
+      ? t("finance.periodAllYear", { year: dateFilter.year })
+      : `${monthFullKey ? t(monthFullKey) : ""} ${dateFilter.year}`;
 
   return (
     <SafeAreaView style={[s.container, { backgroundColor: colors.canvas }]} edges={["top"]}>
@@ -94,7 +100,7 @@ export default function AnalyticsScreen() {
         </TouchableOpacity>
 
         <View style={s.headerText}>
-          <Text style={[s.title, { color: colors.textPrimary }]}>Analytics</Text>
+          <Text style={[s.title, { color: colors.textPrimary }]}>{t("analytics.title")}</Text>
           <View style={s.subRow}>
             <Text style={[s.sub, { color: colors.textMuted }]}>{periodLabel}</Text>
             <MonthFilterChip value={dateFilter} onChange={setDateFilter} />

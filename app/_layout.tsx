@@ -2,7 +2,9 @@ import { authService } from "@/services/authService";
 import { store } from "@/store";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearUser, getUserData } from "@/store/slices/authSlice";
+import { setLocale } from "@/store/slices/localeSlice";
 import { setDarkMode } from "@/store/slices/themeSlice";
+import type { AppLocale } from "@/locales";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   DarkTheme,
@@ -15,10 +17,16 @@ import "react-native-reanimated";
 import { Provider } from "react-redux";
 
 const DARK_MODE_KEY = "gylt_dark_mode";
+const LOCALE_KEY = "gylt_locale";
+
+function isAppLocale(val: string | null): val is AppLocale {
+  return val === "en" || val === "id";
+}
 
 function RootLayoutNav() {
   const dispatch = useAppDispatch();
   const darkMode = useAppSelector((state) => state.theme.darkMode);
+  const locale = useAppSelector((state) => state.locale.locale);
   const [authReady, setAuthReady] = useState(false);
 
   // Load persisted theme on mount
@@ -28,10 +36,21 @@ function RootLayoutNav() {
     });
   }, [dispatch]);
 
+  // Load persisted locale on mount
+  useEffect(() => {
+    AsyncStorage.getItem(LOCALE_KEY).then((val) => {
+      if (isAppLocale(val)) dispatch(setLocale(val));
+    });
+  }, [dispatch]);
+
   // Persist theme whenever it changes
   useEffect(() => {
     AsyncStorage.setItem(DARK_MODE_KEY, String(darkMode));
   }, [darkMode]);
+
+  useEffect(() => {
+    AsyncStorage.setItem(LOCALE_KEY, locale);
+  }, [locale]);
 
   useEffect(() => {
     const unsubscribe = authService.onAuthStateChanged((user) => {

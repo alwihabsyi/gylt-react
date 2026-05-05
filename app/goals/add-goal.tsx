@@ -3,6 +3,8 @@ import { RoundedItemCard } from "@/components/ui/rounded-item-card";
 import { SimpleGrid } from "@/components/ui/simple-grid";
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { TranslationKey } from "@/locales";
 import { Goals } from "@/domain/Goals";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addGoal, clearError } from "@/store/slices/goalSlice";
@@ -24,8 +26,15 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+const INTERVAL_LABEL: Record<GoalInterval, TranslationKey> = {
+  [GoalInterval.Weekly]: "interval.weekly",
+  [GoalInterval.Monthly]: "interval.monthly",
+  [GoalInterval.Annually]: "interval.annually",
+};
+
 export default function AddGoalScreen() {
   const colors = useSemanticColors();
+  const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useAppDispatch();
 
@@ -154,15 +163,17 @@ export default function AddGoalScreen() {
         <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <LabeledTextField
             fieldType={{ kind: "text" }}
-            label="Name"
+            label={t("addGoal.name")}
             value={name}
             onValueChange={handleNameChange}
-            placeHolder="Enter the name of your goal.."
+            placeHolder={t("addGoal.namePlaceholder")}
             error={errors.name}
           />
 
           <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.textPrimary }]}>Interval</Text>
+            <Text style={[styles.sectionLabel, { color: colors.textPrimary }]}>
+              {t("addGoal.interval")}
+            </Text>
             <SimpleGrid
               items={ALL_GOAL_INTERVALS}
               columns={3}
@@ -170,7 +181,7 @@ export default function AddGoalScreen() {
               verticalSpacing={10}
               renderItem={(interval) => (
                 <RoundedItemCard
-                  text={interval.charAt(0).toUpperCase() + interval.slice(1)}
+                  text={t(INTERVAL_LABEL[interval])}
                   isSelected={selectedInterval === interval}
                   onClick={() => handleIntervalChange(interval)}
                 />
@@ -180,28 +191,28 @@ export default function AddGoalScreen() {
 
           <LabeledTextField
             fieldType={{ kind: "number" }}
-            label="Current Progress (amount, session, etc.)"
+            label={t("addGoal.currentProgress")}
             value={amount}
             onValueChange={handleAmountChange}
-            placeHolder="Current progress if any.."
+            placeHolder={t("addGoal.currentPlaceholder")}
             error={errors.currentAmount}
           />
 
           <LabeledTextField
             fieldType={{ kind: "number" }}
-            label="Target"
+            label={t("addGoal.target")}
             value={target}
             onValueChange={handleTargetChange}
-            placeHolder="Your target.."
+            placeHolder={t("addGoal.targetPlaceholder")}
             error={errors.targetAmount}
           />
 
           <LabeledTextField
             fieldType={{ kind: "date" }}
-            label="Target Date"
+            label={t("addGoal.targetDate")}
             value={date}
             onValueChange={handleDateChange}
-            placeHolder="Your goal deadline.."
+            placeHolder={t("addGoal.targetDatePlaceholder")}
             error={errors.targetDate}
           />
 
@@ -219,7 +230,7 @@ export default function AddGoalScreen() {
             disabled={loading}
           >
             <Text style={[styles.submitButtonText, { color: colors.inverseOnAccent }]}>
-              {loading ? "Saving…" : "Start tracking!"}
+              {loading ? t("addGoal.saving") : t("addGoal.submit")}
             </Text>
           </TouchableOpacity>
         </View>

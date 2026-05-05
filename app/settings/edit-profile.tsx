@@ -1,26 +1,30 @@
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
-import { useAppSelector } from "@/store/hooks";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { updateProfile } from "@/store/slices/authSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function EditProfileScreen() {
     const colors = useSemanticColors();
+    const { t } = useTranslation();
     const router = useRouter();
     const { email, fullName } = useAppSelector((state) => state.auth);
+    const dispatch = useAppDispatch();
 
     const [name, setName] = useState(fullName ?? "");
     const [newEmail, setNewEmail] = useState(email ?? "");
@@ -33,18 +37,25 @@ export default function EditProfileScreen() {
 
     const handleSave = async () => {
         if (newPassword && newPassword !== confirmPassword) {
-            Alert.alert("Error", "Passwords do not match.");
+            Alert.alert(t("editProfile.errorPasswordsTitle"), t("editProfile.errorPasswordsMessage"));
             return;
         }
         if (newPassword && !currentPassword) {
-            Alert.alert("Error", "Please enter your current password to set a new one.");
+            Alert.alert(
+                t("editProfile.errorCurrentPasswordTitle"),
+                t("editProfile.errorCurrentPasswordMessage"),
+            );
             return;
         }
         setSaving(true);
-        // TODO: wire up your update logic here
-        // e.g. await authService.updateProfile({ name, email: newEmail, currentPassword, newPassword })
-        setSaving(false);
-        Alert.alert("Success", "Profile updated.", [{ text: "OK", onPress: () => router.back() }]);
+
+        const result = await dispatch(updateProfile({ fullName: name, email: newEmail, currentPassword: currentPassword, newPassword: newPassword }))
+        if (updateProfile.fulfilled.match(result)) {
+            setSaving(false);
+            Alert.alert(t("editProfile.successTitle"), t("editProfile.successMessage"), [
+                { text: t("common.ok"), onPress: () => router.back() },
+            ]);
+        }
     };
 
     return (
@@ -61,7 +72,9 @@ export default function EditProfileScreen() {
                     >
                         <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
                     </TouchableOpacity>
-                    <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Edit Profile</Text>
+                    <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+                        {t("editProfile.title")}
+                    </Text>
                     <View style={{ width: 40 }} />
                 </View>
 
@@ -76,21 +89,25 @@ export default function EditProfileScreen() {
                             <Text style={styles.avatarText}>{avatarLetter}</Text>
                         </View>
                         <Text style={[styles.avatarHint, { color: colors.textMuted }]}>
-                            Your profile initial
+                            {t("editProfile.avatarHint")}
                         </Text>
                     </View>
 
                     {/* Personal Info */}
                     <View style={[styles.card, { backgroundColor: colors.surface }]}>
-                        <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Personal Info</Text>
+                        <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>
+                            {t("editProfile.personalInfo")}
+                        </Text>
 
                         <View style={styles.field}>
-                            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>Full Name</Text>
+                            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+                                {t("editProfile.fullName")}
+                            </Text>
                             <TextInput
                                 style={[styles.input, { color: colors.textPrimary }]}
                                 value={name}
                                 onChangeText={setName}
-                                placeholder="Enter your name"
+                                placeholder={t("editProfile.namePlaceholder")}
                                 placeholderTextColor={colors.textPlaceholderAlt}
                                 autoCapitalize="words"
                             />
@@ -99,47 +116,40 @@ export default function EditProfileScreen() {
                         <View style={[styles.divider, { backgroundColor: colors.divider }]} />
 
                         <View style={styles.field}>
-                            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>Email</Text>
+                            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+                                {t("editProfile.email")}
+                            </Text>
                             <TextInput
                                 style={[styles.input, { color: colors.textPrimary }]}
                                 value={newEmail}
                                 onChangeText={setNewEmail}
-                                placeholder="Enter your email"
+                                placeholder={t("editProfile.emailPlaceholder")}
                                 placeholderTextColor={colors.textPlaceholderAlt}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
+                                editable={false}
                             />
                         </View>
                     </View>
 
                     {/* Change Password */}
                     <View style={[styles.card, { backgroundColor: colors.surface }]}>
-                        <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Change Password</Text>
+                        <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>
+                            {t("editProfile.changePassword")}
+                        </Text>
                         <Text style={[styles.cardSubtitle, { color: colors.textMuted }]}>
-                            Leave blank to keep your current password
+                            {t("editProfile.passwordHint")}
                         </Text>
 
                         <View style={styles.field}>
-                            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>Current Password</Text>
+                            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+                                {t("editProfile.currentPassword")}
+                            </Text>
                             <TextInput
                                 style={[styles.input, { color: colors.textPrimary }]}
                                 value={currentPassword}
                                 onChangeText={setCurrentPassword}
-                                placeholder="Enter current password"
-                                placeholderTextColor={colors.textPlaceholderAlt}
-                                secureTextEntry
-                            />
-                        </View>
-
-                        <View style={[styles.divider, { backgroundColor: colors.divider }]} />
-
-                        <View style={styles.field}>
-                            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>New Password</Text>
-                            <TextInput
-                                style={[styles.input, { color: colors.textPrimary }]}
-                                value={newPassword}
-                                onChangeText={setNewPassword}
-                                placeholder="Enter new password"
+                                placeholder={t("editProfile.currentPasswordPlaceholder")}
                                 placeholderTextColor={colors.textPlaceholderAlt}
                                 secureTextEntry
                             />
@@ -149,13 +159,29 @@ export default function EditProfileScreen() {
 
                         <View style={styles.field}>
                             <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
-                                Confirm New Password
+                                {t("editProfile.newPassword")}
+                            </Text>
+                            <TextInput
+                                style={[styles.input, { color: colors.textPrimary }]}
+                                value={newPassword}
+                                onChangeText={setNewPassword}
+                                placeholder={t("editProfile.newPasswordPlaceholder")}
+                                placeholderTextColor={colors.textPlaceholderAlt}
+                                secureTextEntry
+                            />
+                        </View>
+
+                        <View style={[styles.divider, { backgroundColor: colors.divider }]} />
+
+                        <View style={styles.field}>
+                            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+                                {t("editProfile.confirmPassword")}
                             </Text>
                             <TextInput
                                 style={[styles.input, { color: colors.textPrimary }]}
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
-                                placeholder="Repeat new password"
+                                placeholder={t("editProfile.confirmPlaceholder")}
                                 placeholderTextColor={colors.textPlaceholderAlt}
                                 secureTextEntry
                             />
@@ -170,7 +196,7 @@ export default function EditProfileScreen() {
                         disabled={saving}
                     >
                         <Text style={[styles.saveBtnText, { color: colors.inverseOnAccent }]}>
-                            {saving ? "Saving…" : "Save Changes"}
+                            {saving ? t("editProfile.saving") : t("editProfile.save")}
                         </Text>
                     </TouchableOpacity>
 

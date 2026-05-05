@@ -1,5 +1,6 @@
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Activity, ActivityType } from "@/types/activity";
 import { ALL_CATEGORIES } from "@/types/category";
 import { formatCurrency } from "@/utils/formatter";
@@ -11,6 +12,7 @@ const COLORS = [Palette.EmeraldGreen, Palette.OceanBlue, Palette.MangoOrange, Pa
 
 export default function AnalyticsCategories({ items }: { items: Activity[] }) {
     const colors = useSemanticColors();
+    const { t } = useTranslation();
     const [tab, setTab] = useState<"expense" | "income">("expense");
 
     const tabItems = items.filter(
@@ -30,28 +32,32 @@ export default function AnalyticsCategories({ items }: { items: Activity[] }) {
     return (
         <View style={[s.card, { backgroundColor: colors.surface, shadowColor: colors.shadow }]}>
             <View style={s.titleRow}>
-                <Text style={[s.title, { color: colors.textPrimary }]}>By Category</Text>
+                <Text style={[s.title, { color: colors.textPrimary }]}>
+                    {t("analytics.categoriesTitle")}
+                </Text>
                 <View style={[s.tabs, { backgroundColor: colors.surfaceMuted }]}>
-                    {(["expense", "income"] as const).map((t) => (
+                    {(["expense", "income"] as const).map((mode) => (
                         <TouchableOpacity
-                            key={t}
+                            key={mode}
                             style={[
                                 s.tab,
-                                tab === t && [
+                                tab === mode && [
                                     s.tabOn,
                                     { backgroundColor: colors.surface, shadowColor: colors.shadow },
                                 ],
                             ]}
-                            onPress={() => setTab(t)}
+                            onPress={() => setTab(mode)}
                         >
                             <Text
                                 style={[
                                     s.tabText,
                                     { color: colors.textMuted },
-                                    tab === t && [s.tabTextOn, { color: colors.textPrimary }],
+                                    tab === mode && [s.tabTextOn, { color: colors.textPrimary }],
                                 ]}
                             >
-                                {t === "expense" ? "Expenses" : "Income"}
+                                {mode === "expense"
+                                    ? t("analytics.tabExpenses")
+                                    : t("analytics.tabIncome")}
                             </Text>
                         </TouchableOpacity>
                     ))}
@@ -60,7 +66,12 @@ export default function AnalyticsCategories({ items }: { items: Activity[] }) {
 
             {cats.length === 0 ? (
                 <Text style={[s.empty, { color: colors.textMuted }]}>
-                    No {tab} data this month.
+                    {t("analytics.noCategoryData", {
+                        tab:
+                            tab === "expense"
+                                ? t("analytics.tabExpenses")
+                                : t("analytics.tabIncome"),
+                    })}
                 </Text>
             ) : cats.map((c) => (
                 <View key={c.title} style={s.row}>

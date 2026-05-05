@@ -15,5 +15,6 @@ export const AppRoutes = {
   EditProfile: "/settings/edit-profile" as Href,
   PrivacyPolicy: "/settings/privacy-policy" as Href,
   ContactUs: "/settings/contact-us" as Href,
+  Support: "/settings/support" as Href,
   DeleteAccount: "/settings/delete-account" as Href
 } as const;

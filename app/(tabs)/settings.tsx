@@ -1,7 +1,12 @@
+import { ConfirmSheet } from "@/components/ui/confirm-sheet";
 import { AppRoutes } from "@/constants/routes";
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { AppLocale } from "@/locales";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { signOut } from "@/store/slices/authSlice";
+import { setLocale } from "@/store/slices/localeSlice";
 import { toggleDarkMode } from "@/store/slices/themeSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -72,19 +77,33 @@ function Separator() {
   );
 }
 
+const APP_LOCALES: AppLocale[] = ["en", "id"];
+
 export default function SettingsScreen() {
   const colors = useSemanticColors();
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const router = useRouter();
   const darkMode = useAppSelector((state) => state.theme.darkMode);
+  const language = useAppSelector((state) => state.locale.locale);
   const { email, fullName } = useAppSelector((state) => state.auth);
 
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [currency, setCurrency] = useState("IDR");
-  const currencies = ["IDR", "USD", "SGD", "EUR"];
+  const [showSignOut, setShowSignOut] = useState(false);
 
-  const displayName = fullName ?? email?.split("@")[0] ?? "User";
+  // const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  // const [currency, setCurrency] = useState("IDR");
+  // const currencies = ["IDR", "USD", "SGD", "EUR"];
+
+  const displayName = fullName ?? email?.split("@")[0] ?? t("common.user");
   const avatarLetter = displayName.charAt(0).toUpperCase();
+
+  const handleSignOut = async () => {
+    const result = await dispatch(signOut());
+    if (signOut.fulfilled.match(result)) {
+      setShowSignOut(false);
+      router.replace(AppRoutes.SignIn);
+    }
+  }
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.screenGrey }]} edges={["top"]}>
@@ -104,20 +123,21 @@ export default function SettingsScreen() {
             <Text style={styles.avatarText}>{avatarLetter}</Text>
           </View>
           <Text style={styles.username}>{displayName}</Text>
-          <Text style={styles.userSubtitle}>Personal Finance & Wellbeing</Text>
+          <Text style={styles.userSubtitle}>{t("settings.profileSubtitle")}</Text>
         </LinearGradient>
 
         {/* Account */}
-        <SettingsSection title="Account">
+        <SettingsSection title={t("settings.section.account")}>
           <SettingRow
             icon="person-outline"
-            label="Edit Profile"
+            label={t("settings.editProfile")}
             onPress={() => router.push(AppRoutes.EditProfile)}
           />
-          <Separator />
+          {/* Currency - Disabled now */}
+          {/* <Separator />
           <SettingRow
             icon="cash-outline"
-            label="Currency"
+            label={t("settings.currency")}
             right={
               <View style={styles.currencyPicker}>
                 {currencies.map((c) => (
@@ -146,14 +166,15 @@ export default function SettingsScreen() {
                 ))}
               </View>
             }
-          />
+          /> */}
         </SettingsSection>
 
         {/* Preferences */}
-        <SettingsSection title="Preferences">
-          <SettingRow
+        <SettingsSection title={t("settings.section.preferences")}>
+          {/* Notification - Disabled for now */}
+          {/* <SettingRow
             icon="notifications-outline"
-            label="Notifications"
+            label={t("settings.notifications")}
             right={
               <Switch
                 value={notificationsEnabled}
@@ -166,10 +187,46 @@ export default function SettingsScreen() {
               />
             }
           />
+          <Separator /> */}
+
+          <SettingRow
+            icon="language-outline"
+            label={t("settings.language")}
+            right={
+              <View style={styles.currencyPicker}>
+                {APP_LOCALES.map((code) => (
+                  <TouchableOpacity
+                    key={code}
+                    onPress={() => dispatch(setLocale(code))}
+                    style={[
+                      styles.currencyOption,
+                      { borderColor: colors.border },
+                      language === code && styles.currencyOptionSelected,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.currencyText,
+                        { color: colors.textMuted },
+                        language === code && [
+                          styles.currencyTextSelected,
+                          { color: colors.inverseOnAccent },
+                        ],
+                      ]}
+                    >
+                      {code === "en"
+                        ? t("settings.languageEnglish")
+                        : t("settings.languageIndonesian")}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            }
+          />
           <Separator />
           <SettingRow
             icon="moon-outline"
-            label="Dark Mode"
+            label={t("settings.darkMode")}
             right={
               <Switch
                 value={darkMode}
@@ -187,10 +244,10 @@ export default function SettingsScreen() {
         </SettingsSection>
 
         {/* About */}
-        <SettingsSection title="About">
+        <SettingsSection title={t("settings.section.about")}>
           <SettingRow
             icon="information-circle-outline"
-            label="Version"
+            label={t("settings.version")}
             right={
               <Text style={[styles.versionText, { color: colors.textMuted }]}>
                 {APP_VERSION}
@@ -200,14 +257,20 @@ export default function SettingsScreen() {
           <Separator />
           <SettingRow
             icon="document-text-outline"
-            label="Privacy Policy"
+            label={t("settings.privacyPolicy")}
             onPress={() => router.push(AppRoutes.PrivacyPolicy)}
           />
           <Separator />
           <SettingRow
             icon="mail-outline"
-            label="Contact Us"
+            label={t("settings.contactUs")}
             onPress={() => router.push(AppRoutes.ContactUs)}
+          />
+          <Separator />
+          <SettingRow
+            icon="cash-outline"
+            label={t("settings.support")}
+            onPress={() => router.push(AppRoutes.Support)}
           />
         </SettingsSection>
 
@@ -228,13 +291,13 @@ export default function SettingsScreen() {
                 <Ionicons name="trash-outline" size={18} color={colors.danger} />
               </View>
               <Text style={[styles.rowLabel, { color: colors.danger }]}>
-                Delete Account
+                {t("settings.deleteAccount")}
               </Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={colors.danger} />
           </TouchableOpacity>
           <Separator />
-          <TouchableOpacity style={styles.row} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.row} activeOpacity={0.7} onPress={() => setShowSignOut(true)}>
             <View style={styles.rowLeft}>
               <View
                 style={[
@@ -245,12 +308,24 @@ export default function SettingsScreen() {
                 <Ionicons name="log-out-outline" size={18} color={colors.danger} />
               </View>
               <Text style={[styles.rowLabel, { color: colors.danger }]}>
-                Sign Out
+                {t("settings.signOut")}
               </Text>
             </View>
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <ConfirmSheet
+        visible={showSignOut}
+        icon="log-out-outline"
+        title={t("settings.signOut")}
+        message={t("settings.signOutMessage")}
+        confirmLabel={t("settings.signOut")}
+        cancelLabel={t("settings.cancel")}
+        destructive
+        onConfirm={handleSignOut}
+        onCancel={() => setShowSignOut(false)}
+      />
     </SafeAreaView>
   );
 }

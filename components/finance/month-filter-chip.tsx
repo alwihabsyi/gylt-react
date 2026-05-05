@@ -1,6 +1,7 @@
-import { MONTHS } from "@/constants/constants";
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { TranslationKey } from "@/locales";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
@@ -23,14 +24,18 @@ type Props = {
 
 export default function MonthFilterChip({ value, onChange }: Props) {
     const colors = useSemanticColors();
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [tempYear, setTempYear] = useState(value.year);
     const [tempMonth, setTempMonth] = useState(value.month);
 
+    const shortMonth = (i: number) =>
+        t(`months.short.${i}` as TranslationKey);
+
     const label =
         value.month === null
             ? `${value.year}`
-            : `${MONTHS[value.month]} ${value.year}`;
+            : `${shortMonth(value.month)} ${value.year}`;
 
     const apply = () => {
         onChange({ year: tempYear, month: tempMonth });
@@ -59,9 +64,13 @@ export default function MonthFilterChip({ value, onChange }: Props) {
                 />
                 <View style={[styles.sheet, { backgroundColor: colors.surface }]}>
                     <View style={[styles.handle, { backgroundColor: colors.pillHandle }]} />
-                    <Text style={[styles.sheetTitle, { color: colors.textPrimary }]}>Filter by Period</Text>
+                    <Text style={[styles.sheetTitle, { color: colors.textPrimary }]}>
+                        {t("monthFilter.title")}
+                    </Text>
 
-                    <Text style={[styles.label, { color: colors.textMuted }]}>Year</Text>
+                    <Text style={[styles.label, { color: colors.textMuted }]}>
+                        {t("monthFilter.year")}
+                    </Text>
                     <View style={styles.row}>
                         {YEARS.map((y) => (
                             <TouchableOpacity
@@ -89,7 +98,9 @@ export default function MonthFilterChip({ value, onChange }: Props) {
                         ))}
                     </View>
 
-                    <Text style={[styles.label, { color: colors.textMuted }]}>Month</Text>
+                    <Text style={[styles.label, { color: colors.textMuted }]}>
+                        {t("monthFilter.month")}
+                    </Text>
                     <TouchableOpacity
                         style={[
                             styles.pill,
@@ -109,13 +120,13 @@ export default function MonthFilterChip({ value, onChange }: Props) {
                                 tempMonth === null && styles.pillTextOn,
                             ]}
                         >
-                            All months
+                            {t("monthFilter.allMonths")}
                         </Text>
                     </TouchableOpacity>
                     <View style={styles.grid}>
-                        {MONTHS.map((m, i) => (
+                        {Array.from({ length: 12 }, (_, i) => i).map((i) => (
                             <TouchableOpacity
-                                key={m}
+                                key={i}
                                 style={[
                                     styles.monthPill,
                                     {
@@ -133,14 +144,16 @@ export default function MonthFilterChip({ value, onChange }: Props) {
                                         tempMonth === i && styles.pillTextOn,
                                     ]}
                                 >
-                                    {m}
+                                    {shortMonth(i)}
                                 </Text>
                             </TouchableOpacity>
                         ))}
                     </View>
 
                     <TouchableOpacity style={styles.applyBtn} onPress={apply}>
-                        <Text style={[styles.applyText, { color: colors.inverseOnAccent }]}>Apply</Text>
+                        <Text style={[styles.applyText, { color: colors.inverseOnAccent }]}>
+                            {t("monthFilter.apply")}
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </Modal>

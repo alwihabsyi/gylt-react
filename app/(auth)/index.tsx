@@ -1,6 +1,5 @@
 import AuthBackground from "@/components/layout/auth-background";
 import GradientButton from "@/components/ui/gradient-button";
-import SocialButton from "@/components/ui/social-button";
 import StealthField from "@/components/ui/stealth-field";
 import { AppRoutes } from "@/constants/routes";
 import { Palette } from "@/constants/theme";
@@ -119,19 +118,20 @@ export default function SignInScreen() {
 
         <View style={styles.spacer24} />
 
+        {/* Disable Google Auth for now */}
         {/* Divider */}
-        <View style={styles.dividerRow}>
+        {/* <View style={styles.dividerRow}>
           <View style={styles.dividerLine} />
           <Text style={styles.dividerText}> or </Text>
           <View style={styles.dividerLine} />
-        </View>
+        </View> */}
 
-        <View style={styles.spacer20} />
+        {/* <View style={styles.spacer20} /> */}
 
         {/* Google button */}
-        <SocialButton
+        {/* <SocialButton
           onPress={() => console.log("Logging in with Google...")}
-        />
+        /> */}
 
         <View style={styles.spacer36} />
 

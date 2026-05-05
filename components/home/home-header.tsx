@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-nati
 
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Category } from "@/types/category";
 import { formatCurrency, getWeekRangeString } from "@/utils/formatter";
 
@@ -14,21 +15,23 @@ type Props = {
   onPress: (s: string) => void; 
 };
 
-export default function HomeHeader({ income, expense, username = "User", onPress }: Props) {
+export default function HomeHeader({ income, expense, username, onPress }: Props) {
   const colors = useSemanticColors();
+  const { t } = useTranslation();
+  const displayName = username ?? t("common.user");
 
   return (
     <View style={styles.headerContainer}>
       {/* Greeting */}
       <View style={styles.greetingSection}>
-        <Text style={[styles.helloText, { color: colors.textPrimary }]}>Hello,</Text>
-        <Text style={[styles.userText, { color: colors.textPrimary }]}>{username}</Text>
+        <Text style={[styles.helloText, { color: colors.textPrimary }]}>{t("home.hello")}</Text>
+        <Text style={[styles.userText, { color: colors.textPrimary }]}>{displayName}</Text>
       </View>
 
       {/* Summary Card */}
       <View style={styles.summaryCard}>
         <View style={styles.summaryHeader}>
-          <Text style={styles.summaryHeaderText}>This Week</Text>
+          <Text style={styles.summaryHeaderText}>{t("home.thisWeek")}</Text>
           <Text style={styles.summaryHeaderText}>{getWeekRangeString()}</Text>
         </View>
 
@@ -43,7 +46,7 @@ export default function HomeHeader({ income, expense, username = "User", onPress
                 style={{ transform: [{ rotate: "45deg" }] }}
               />
             </View>
-            <Text style={styles.summaryLabel}>Income</Text>
+            <Text style={styles.summaryLabel}>{t("home.income")}</Text>
             <Text style={styles.summaryAmount}>{formatCurrency(income)}</Text>
           </View>
 
@@ -57,14 +60,14 @@ export default function HomeHeader({ income, expense, username = "User", onPress
                 style={{ transform: [{ rotate: "45deg" }] }}
               />
             </View>
-            <Text style={styles.summaryLabel}>Expense</Text>
+            <Text style={styles.summaryLabel}>{t("home.expense")}</Text>
             <Text style={styles.summaryAmount}>{formatCurrency(expense)}</Text>
           </View>
         </View>
       </View>
 
       {/* Categories || Currently inactive */}
-      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Categories</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{t("home.categories")}</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -91,7 +94,9 @@ export default function HomeHeader({ income, expense, username = "User", onPress
         ))}
       </ScrollView>
 
-      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Recent Transactions</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+        {t("home.recentTransactions")}
+      </Text>
     </View>
   );
 }

@@ -3,6 +3,7 @@ import { RoundedItemCard } from "@/components/ui/rounded-item-card";
 import { SimpleGrid } from "@/components/ui/simple-grid";
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addActivity, clearError } from "@/store/slices/activitySlice";
 import { Activity, ActivityType, ALL_ACTIVITY_TYPES } from "@/types/activity";
@@ -30,6 +31,7 @@ type Props = {
 
 export default function AddTransactionScreen({ onBack }: Props) {
   const colors = useSemanticColors();
+  const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { loading, error } = useAppSelector((state) => state.transactions);
@@ -139,7 +141,7 @@ export default function AddTransactionScreen({ onBack }: Props) {
                     },
                   ]}
                 >
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                  {type === ActivityType.Income ? t("home.income") : t("home.expense")}
                 </Text>
               </TouchableOpacity>
             );
@@ -150,7 +152,7 @@ export default function AddTransactionScreen({ onBack }: Props) {
         <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <LabeledTextField
             fieldType={{ kind: "number" }}
-            label="Amount"
+            label={t("addTx.amount")}
             value={amount}
             onValueChange={handleAmountChange}
             prefix="Rp "
@@ -160,7 +162,7 @@ export default function AddTransactionScreen({ onBack }: Props) {
           {selectedType === ActivityType.Expense && (
             <View style={styles.categorySection}>
               <Text style={[styles.sectionLabel, { color: colors.textPrimary }]}>
-                Category
+                {t("addTx.category")}
               </Text>
               <SimpleGrid
                 items={ALL_CATEGORIES}
@@ -181,29 +183,29 @@ export default function AddTransactionScreen({ onBack }: Props) {
 
           <LabeledTextField
             fieldType={{ kind: "text" }}
-            label="Name"
+            label={t("addTx.name")}
             value={name}
             onValueChange={handleNameChange}
-            placeHolder="Give this transaction a name.."
+            placeHolder={t("addTx.namePlaceholder")}
             error={errors.name}
           />
 
           <LabeledTextField
             fieldType={{ kind: "date" }}
-            label="Date"
+            label={t("addTx.date")}
             value={date}
             onValueChange={handleDateChange}
-            placeHolder="Enter the date of transaction.."
+            placeHolder={t("addTx.datePlaceholder")}
             error={errors.date}
           />
 
           {selectedType === ActivityType.Expense && (
             <LabeledTextField
               fieldType={{ kind: "options", options: ALL_PAYMENT_METHODS }}
-              label="Payment Method"
+              label={t("addTx.paymentMethod")}
               value={paymentMethod}
               onValueChange={handlePaymentMethodChange}
-              placeHolder="Your payment method.."
+              placeHolder={t("addTx.paymentPlaceholder")}
               error={errors.paymentMethod}
             />
           )}
@@ -222,8 +224,10 @@ export default function AddTransactionScreen({ onBack }: Props) {
           >
             <Text style={[styles.submitButtonText, { color: colors.inverseOnAccent }]}>
               {loading
-                ? "Saving…"
-                : `Add ${selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}`}
+                ? t("addTx.saving")
+                : selectedType === ActivityType.Income
+                  ? t("addTx.submitIncome")
+                  : t("addTx.submitExpense")}
             </Text>
           </TouchableOpacity>
         </View>

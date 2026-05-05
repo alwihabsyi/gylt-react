@@ -1,5 +1,6 @@
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
 import { formatCurrency } from "@/utils/formatter";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
@@ -12,19 +13,24 @@ type Props = {
 
 export default function AnalyticsHero({ net, savingsRate, topCategory }: Props) {
     const colors = useSemanticColors();
+    const { t } = useTranslation();
     const positive = net >= 0;
     const bg = positive ? Palette.EmeraldGreen : Palette.PoppyRed;
     return (
         <View style={[s.card, { backgroundColor: bg, shadowColor: colors.shadow }]}>
-            <Text style={s.label}>Net this month</Text>
+            <Text style={s.label}>{t("analytics.heroNet")}</Text>
             <Text style={s.value}>{formatCurrency(Math.abs(net))}</Text>
             <Text style={s.sub}>
-                {positive ? `Savings rate: ${savingsRate}%` : "You spent more than you earned"}
+                {positive
+                    ? t("analytics.heroSavingsRate", { rate: savingsRate })
+                    : t("analytics.heroSpentMore")}
             </Text>
             {topCategory && (
                 <View style={s.badge}>
                     <Ionicons name={topCategory.icon} size={12} color={colors.inverseOnAccent} />
-                    <Text style={s.badgeText}>Top spend: {topCategory.title}</Text>
+                    <Text style={s.badgeText}>
+                        {t("analytics.heroTopSpend", { category: topCategory.title })}
+                    </Text>
                 </View>
             )}
         </View>

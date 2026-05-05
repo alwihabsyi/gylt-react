@@ -1,5 +1,6 @@
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Goals } from "@/domain/Goals";
 import { GoalType } from "@/types/goal";
 import { formatNumber, unformatNumber } from "@/utils/formatter";
@@ -16,13 +17,14 @@ type Props = {
 
 export function UpdateProgressSheet({ goal, visible, onClose, onSave, saving }: Props) {
     const colors = useSemanticColors();
+    const { t } = useTranslation();
     const [input, setInput] = useState(goal.currentAmount.toString());
     const isFinancial = goal.goalType === GoalType.Financial;
 
     const handleSave = () => {
         const parsed = parseFloat(unformatNumber(input).replace(/,/g, "."));
         if (isNaN(parsed) || parsed < 0) {
-            Alert.alert("Invalid amount", "Please enter a valid number.");
+            Alert.alert(t("updateProgress.invalidTitle"), t("updateProgress.invalidMessage"));
             return;
         }
         onSave(parsed);
@@ -42,11 +44,13 @@ export function UpdateProgressSheet({ goal, visible, onClose, onSave, saving }: 
             />
             <View style={[styles.sheet, { backgroundColor: colors.surface }]}>
                 <View style={[styles.handle, { backgroundColor: colors.sheetHandle }]} />
-                <Text style={[styles.title, { color: colors.textPrimary }]}>Update Progress</Text>
+                <Text style={[styles.title, { color: colors.textPrimary }]}>
+                    {t("updateProgress.title")}
+                </Text>
                 <Text style={[styles.subtitle, { color: colors.textMuted }]}>
                     {isFinancial
-                        ? "Enter your current saved amount"
-                        : "Enter your current progress count"}
+                        ? t("updateProgress.subtitleFinancial")
+                        : t("updateProgress.subtitleWellbeing")}
                 </Text>
 
                 <View style={styles.inputRow}>
@@ -66,7 +70,10 @@ export function UpdateProgressSheet({ goal, visible, onClose, onSave, saving }: 
                         autoFocus
                     />
                     <Text style={[styles.inputHint, { color: colors.textMuted }]}>
-                        of {formatNumber(goal.targetAmount.toString())}{isFinancial ? "" : " total"}
+                        {t("updateProgress.ofTarget", {
+                            amount: formatNumber(goal.targetAmount.toString()),
+                            suffix: isFinancial ? "" : t("updateProgress.suffixTotal"),
+                        })}
                     </Text>
                 </View>
 
@@ -77,7 +84,7 @@ export function UpdateProgressSheet({ goal, visible, onClose, onSave, saving }: 
                     disabled={saving}
                 >
                     <Text style={[styles.saveButtonText, { color: colors.inverseOnAccent }]}>
-                        {saving ? "Saving…" : "Save Progress"}
+                        {saving ? t("updateProgress.saving") : t("updateProgress.save")}
                     </Text>
                 </TouchableOpacity>
             </View>

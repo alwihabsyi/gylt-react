@@ -1,4 +1,4 @@
-import { authService } from "@/services/authService";
+import { authService, UpdateProfilePayload } from "@/services/authService";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 type AuthState = {
@@ -16,7 +16,7 @@ const initialState: AuthState = {
   fullName: null,
   loading: false,
   error: null,
-  createdAt: null
+  createdAt: null,
 };
 
 export const signIn = createAsyncThunk(
@@ -29,15 +29,7 @@ export const signIn = createAsyncThunk(
 
 export const signUp = createAsyncThunk(
   "auth/signUp",
-  async ({
-    email,
-    password,
-    fullName,
-  }: {
-    email: string;
-    password: string;
-    fullName: string;
-  }) => {
+  async ({ email, password, fullName }: { email: string; password: string; fullName: string }) => {
     const user = await authService.signUp(email, password, fullName);
     return { userId: user.uid, email: user.email };
   },
@@ -46,14 +38,28 @@ export const signUp = createAsyncThunk(
 export const getUserData = createAsyncThunk(
   "auth/userData",
   async (id: string) => {
-    const user = await authService.userData(id);
-    return user;
+    return await authService.userData(id);
   },
 );
 
 export const signOut = createAsyncThunk("auth/signOut", async () => {
   await authService.signOut();
 });
+
+export const updateProfile = createAsyncThunk(
+  "auth/updateProfile",
+  async (payload: UpdateProfilePayload) => {
+    await authService.updateProfile(payload);
+    return payload;
+  },
+);
+
+export const deleteAccount = createAsyncThunk(
+  "auth/deleteAccount",
+  async (password: string) => {
+    await authService.deleteAccount(password);
+  },
+);
 
 const authSlice = createSlice({
   name: "auth",
@@ -63,7 +69,10 @@ const authSlice = createSlice({
       state.userId = null;
       state.email = null;
       state.fullName = null;
-      state.createdAt = null
+      state.createdAt = null;
+    },
+    clearError(state) {
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -95,7 +104,6 @@ const authSlice = createSlice({
         state.error = action.error.message ?? "Sign up failed";
       })
       .addCase(getUserData.fulfilled, (state, action) => {
-        state.loading = false;
         state.userId = action.payload.id;
         state.email = action.payload.email;
         state.fullName = action.payload.fullName;
@@ -104,9 +112,39 @@ const authSlice = createSlice({
       .addCase(signOut.fulfilled, (state) => {
         state.userId = null;
         state.email = null;
+        state.fullName = null;
+        state.createdAt = null;
+      })
+      .addCase(updateProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        if (action.payload.fullName) state.fullName = action.payload.fullName;
+        if (action.payload.email) state.email = action.payload.email;
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message ?? "Failed to update profile";
+      })
+      .addCase(deleteAccount.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteAccount.fulfilled, (state) => {
+        state.loading = false;
+        state.userId = null;
+        state.email = null;
+        state.fullName = null;
+        state.createdAt = null;
+      })
+      .addCase(deleteAccount.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message ?? "Failed to delete account";
       });
   },
 });
 
-export const { clearUser } = authSlice.actions;
+export const { clearUser, clearError } = authSlice.actions;
 export default authSlice.reducer;

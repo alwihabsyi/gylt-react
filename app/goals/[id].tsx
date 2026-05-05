@@ -8,10 +8,12 @@ import GlobalError from "@/components/ui/global-error";
 import GlobalLoading from "@/components/ui/global-loading";
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { TranslationKey } from "@/locales";
 import { Goals, formattedIntervalTarget, goalProgress } from "@/domain/Goals";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { deleteGoal, fetchGoals, updateGoal } from "@/store/slices/goalSlice";
-import { GoalType } from "@/types/goal";
+import { GoalInterval, GoalType } from "@/types/goal";
 import { formatCurrency, getGoalDuration, parseFormattedDate } from "@/utils/formatter";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -27,8 +29,15 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+const INTERVAL_LABEL: Record<GoalInterval, TranslationKey> = {
+  [GoalInterval.Weekly]: "interval.weekly",
+  [GoalInterval.Monthly]: "interval.monthly",
+  [GoalInterval.Annually]: "interval.annually",
+};
+
 export default function GoalDetailScreen() {
   const colors = useSemanticColors();
+  const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -81,12 +90,12 @@ export default function GoalDetailScreen() {
   const handleDelete = () => {
     if (!goal?.id) return;
     Alert.alert(
-      "Delete goal",
-      "Are you sure you want to stop tracking this goal?",
+      t("goalDetail.deleteAlertTitle"),
+      t("goalDetail.deleteAlertMessage"),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("goalDetail.cancel"), style: "cancel" },
         {
-          text: isDeleting ? "Deleting…" : "Delete",
+          text: isDeleting ? t("goalDetail.deleting") : t("goalDetail.deleteConfirm"),
           style: "destructive",
           onPress: async () => {
             setIsDeleting(true);
@@ -105,21 +114,21 @@ export default function GoalDetailScreen() {
   if (!id)
     return (
       <SafeAreaView style={safeAreaStyle} edges={["top"]}>
-        <GlobalError title="Invalid goal" message="Missing goal id." />
+        <GlobalError title={t("goalDetail.invalidTitle")} message={t("goalDetail.invalidMessage")} />
       </SafeAreaView>
     );
 
   if (loading && items.length === 0)
     return (
       <SafeAreaView style={safeAreaStyle} edges={["top"]}>
-        <GlobalLoading label="Loading goal…" />
+        <GlobalLoading label={t("goalDetail.loading")} />
       </SafeAreaView>
     );
 
   if (error)
     return (
       <SafeAreaView style={safeAreaStyle} edges={["top"]}>
-        <GlobalError title="Something went wrong" message={error} />
+        <GlobalError title={t("common.errorTitle")} message={error} />
       </SafeAreaView>
     );
 
@@ -128,9 +137,9 @@ export default function GoalDetailScreen() {
       <SafeAreaView style={safeAreaStyle} edges={["top"]}>
         <GlobalEmptyState
           icon="🎯"
-          title="Goal not found"
-          message="This goal may have been deleted."
-          actionLabel="Back to goals"
+          title={t("goalDetail.notFoundTitle")}
+          message={t("goalDetail.notFoundMessage")}
+          actionLabel={t("goalDetail.backToGoals")}
           onAction={() => router.back()}
           variant="inline"
           style={{ paddingHorizontal: 18 }}
@@ -165,8 +174,8 @@ export default function GoalDetailScreen() {
             formatCurrency={formatCurrency}
           />
           <View style={styles.statsRow}>
-            <GoalStatBox label="Progress Percentage" value={`${progress.toFixed(2)}%`} />
-            <GoalStatBox label="Time Left" value={timeLeft ?? "-"} />
+            <GoalStatBox label={t("goalDetail.progressPct")} value={`${progress.toFixed(2)}%`} />
+            <GoalStatBox label={t("goalDetail.timeLeft")} value={timeLeft ?? "-"} />
           </View>
         </View>
 
@@ -177,23 +186,29 @@ export default function GoalDetailScreen() {
         >
           <Ionicons name="trending-up-outline" size={18} color={colors.inverseOnAccent} />
           <Text style={[styles.updateButtonText, { color: colors.inverseOnAccent }]}>
-            Update Progress
+            {t("goalDetail.updateProgress")}
           </Text>
         </TouchableOpacity>
 
         <View style={[styles.sectionCard, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Goal details</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            {t("goalDetail.goalDetails")}
+          </Text>
           <GoalDetailRow
-            label="Goal Type"
-            value={goal.goalType === GoalType.Financial ? "Financial" : "Well-Being"}
+            label={t("goalDetail.goalType")}
+            value={
+              goal.goalType === GoalType.Financial
+                ? t("goalDetail.financial")
+                : t("goalDetail.wellBeing")
+            }
           />
           <GoalDetailRow
-            label="Interval"
-            value={goal.intervalType.charAt(0).toUpperCase() + goal.intervalType.slice(1)}
+            label={t("goalDetail.interval")}
+            value={t(INTERVAL_LABEL[goal.intervalType])}
           />
-          <GoalDetailRow label="Target" value={formattedIntervalTarget(goal)} />
-          <GoalDetailRow label="Target Date" value={goal.targetDate} />
-          <GoalDetailRow label="Started" value={goal.createdAt} />
+          <GoalDetailRow label={t("goalDetail.target")} value={formattedIntervalTarget(goal)} />
+          <GoalDetailRow label={t("goalDetail.targetDate")} value={goal.targetDate} />
+          <GoalDetailRow label={t("goalDetail.started")} value={goal.createdAt} />
 
           <TouchableOpacity
             style={[styles.deleteButton, isDeleting && styles.deleteButtonDisabled]}
@@ -203,7 +218,7 @@ export default function GoalDetailScreen() {
           >
             <Ionicons name="trash-outline" size={18} color={Palette.PoppyRed} />
             <Text style={styles.deleteButtonText}>
-              {isDeleting ? "Deleting…" : "Stop tracking"}
+              {isDeleting ? t("goalDetail.deleting") : t("goalDetail.stopTracking")}
             </Text>
           </TouchableOpacity>
         </View>

@@ -18,6 +18,7 @@ import SpeedDialFab from "@/components/ui/speed-dial-fab";
 import { AppRoutes } from "@/constants/routes";
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchActivities } from "@/store/slices/activitySlice";
 import { Category } from "@/types/category";
@@ -26,6 +27,7 @@ import { parseFormattedDate } from "@/utils/formatter";
 
 export default function FinanceScreen() {
   const colors = useSemanticColors();
+  const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const userId = useAppSelector((state) => state.auth.userId);
@@ -48,8 +50,14 @@ export default function FinanceScreen() {
   }, [load]);
 
   const filterOptions = useMemo(
-    () => ["All", ...Object.values(Category).map((c) => c.title)],
-    [],
+    () => [
+      { value: "All", label: t("common.all") },
+      ...Object.values(Category).map((c) => ({
+        value: c.title,
+        label: c.title,
+      })),
+    ],
+    [t],
   );
 
   const filteredItems = useMemo(() => {
@@ -117,15 +125,15 @@ export default function FinanceScreen() {
 
   const emptyContent =
     loading && !refreshing ? (
-      <GlobalLoading label="Loading your transactions…" />
+      <GlobalLoading label={t("finance.loadingTransactions")} />
     ) : error ? (
-      <GlobalError title="Something went wrong" message={error} />
+      <GlobalError title={t("common.errorTitle")} message={error} />
     ) : searchQuery || selectedFilter !== "All" ? (
       <GlobalEmptyState
         icon="🔍"
-        title="No results"
-        message="Try a different search term or filter."
-        actionLabel="Clear filters"
+        title={t("finance.noResults")}
+        message={t("finance.noResultsMessage")}
+        actionLabel={t("finance.clearFilters")}
         onAction={() => {
           setSearchQuery("");
           setSelectedFilter("All");
@@ -134,15 +142,15 @@ export default function FinanceScreen() {
     ) : (
       <GlobalEmptyState
         icon="🧾"
-        title="No transactions yet"
-        message="Add your first transaction to see your summary here."
-        actionLabel="Add transaction"
+        title={t("finance.noTransactionsTitle")}
+        message={t("finance.noTransactionsMessage")}
+        actionLabel={t("finance.addTransaction")}
         onAction={() => router.push(AppRoutes.AddTransaction)}
       />
     );
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.canvas }]} edges={["top"]}>
       {!isEmpty ? (
         <FlatList
           data={filteredItems}

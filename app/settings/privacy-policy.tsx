@@ -1,5 +1,6 @@
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -44,6 +45,7 @@ function Bullet({ children }: { children: string }) {
 
 export default function PrivacyPolicyScreen() {
     const colors = useSemanticColors();
+    const { t } = useTranslation();
     const router = useRouter();
 
     return (
@@ -55,7 +57,9 @@ export default function PrivacyPolicyScreen() {
                 >
                     <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Privacy Policy</Text>
+                <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+                    {t("privacy.title")}
+                </Text>
                 <View style={{ width: 40 }} />
             </View>
 
@@ -64,79 +68,67 @@ export default function PrivacyPolicyScreen() {
                 showsVerticalScrollIndicator={false}
             >
                 <Text style={[styles.lastUpdated, { color: colors.textMuted }]}>
-                    Last updated: {LAST_UPDATED}
+                    {t("privacy.lastUpdated", { date: LAST_UPDATED })}
                 </Text>
 
-                <Body>
-                    {`Welcome to ${APP_NAME}. We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains what information we collect, how we use it, and what rights you have in relation to it.`}
-                </Body>
+                <Body>{t("privacy.intro", { app: APP_NAME })}</Body>
 
-                <Section title="1. Information We Collect">
-                    <Body>We collect information you provide directly to us when you:</Body>
-                    <Bullet>Create an account (name, email address, password)</Bullet>
-                    <Bullet>Enter financial transactions, goals, or budget data</Bullet>
-                    <Bullet>Contact us for support</Bullet>
-                    <Body>{"\n"}We do not collect sensitive financial data such as bank account numbers or credit card details.</Body>
+                <Section title={t("privacy.s1.title")}>
+                    <Body>{t("privacy.s1.body")}</Body>
+                    <Bullet>{t("privacy.s1.bullet1")}</Bullet>
+                    <Bullet>{t("privacy.s1.bullet2")}</Bullet>
+                    <Bullet>{t("privacy.s1.bullet3")}</Bullet>
+                    <Body>{"\n"}{t("privacy.s1.footer")}</Body>
                 </Section>
 
-                <Section title="2. How We Use Your Information">
-                    <Body>We use the information we collect to:</Body>
-                    <Bullet>Provide, operate, and maintain the app</Bullet>
-                    <Bullet>Personalize your experience</Bullet>
-                    <Bullet>Send transactional notifications you have requested</Bullet>
-                    <Bullet>Improve the app based on aggregate usage patterns</Bullet>
-                    <Bullet>Respond to your comments and questions</Bullet>
+                <Section title={t("privacy.s2.title")}>
+                    <Body>{t("privacy.s2.body")}</Body>
+                    <Bullet>{t("privacy.s2.bullet1")}</Bullet>
+                    <Bullet>{t("privacy.s2.bullet2")}</Bullet>
+                    <Bullet>{t("privacy.s2.bullet3")}</Bullet>
+                    <Bullet>{t("privacy.s2.bullet4")}</Bullet>
+                    <Bullet>{t("privacy.s2.bullet5")}</Bullet>
                 </Section>
 
-                <Section title="3. Data Storage and Security">
-                    <Body>
-                        {`Your data is stored securely using Google Firebase infrastructure. We implement industry-standard security measures including encryption in transit (TLS) and at rest. However, no method of electronic storage is 100% secure, and we cannot guarantee absolute security.`}
-                    </Body>
+                <Section title={t("privacy.s3.title")}>
+                    <Body>{t("privacy.s3.body")}</Body>
                 </Section>
 
-                <Section title="4. Data Sharing and Disclosure">
-                    <Body>We do not sell, trade, or rent your personal information to third parties. We may share your information only in the following limited circumstances:</Body>
-                    <Bullet>With service providers who help us operate the app (e.g., Firebase)</Bullet>
-                    <Bullet>When required by law or to protect our legal rights</Bullet>
-                    <Bullet>With your explicit consent</Bullet>
+                <Section title={t("privacy.s4.title")}>
+                    <Body>{t("privacy.s4.body")}</Body>
+                    <Bullet>{t("privacy.s4.bullet1")}</Bullet>
+                    <Bullet>{t("privacy.s4.bullet2")}</Bullet>
+                    <Bullet>{t("privacy.s4.bullet3")}</Bullet>
                 </Section>
 
-                <Section title="5. Data Retention">
-                    <Body>
-                        {`We retain your personal data for as long as your account is active. If you delete your account, we will delete your personal data within 30 days, except where retention is required by law.`}
-                    </Body>
+                <Section title={t("privacy.s5.title")}>
+                    <Body>{t("privacy.s5.body")}</Body>
                 </Section>
 
-                <Section title="6. Your Rights">
-                    <Body>Depending on your location, you may have the right to:</Body>
-                    <Bullet>Access the personal data we hold about you</Bullet>
-                    <Bullet>Request correction of inaccurate data</Bullet>
-                    <Bullet>{"Request deletion of your data (\"right to be forgotten\")"}</Bullet>
-                    <Bullet>Object to or restrict how we process your data</Bullet>
-                    <Bullet>Data portability</Bullet>
-                    <Body>{"\n"}To exercise any of these rights, please contact us at {CONTACT_EMAIL}.</Body>
+                <Section title={t("privacy.s6.title")}>
+                    <Body>{t("privacy.s6.body")}</Body>
+                    <Bullet>{t("privacy.s6.bullet1")}</Bullet>
+                    <Bullet>{t("privacy.s6.bullet2")}</Bullet>
+                    <Bullet>{t("privacy.s6.bullet3")}</Bullet>
+                    <Bullet>{t("privacy.s6.bullet4")}</Bullet>
+                    <Bullet>{t("privacy.s6.bullet5")}</Bullet>
+                    <Body>{"\n"}{t("privacy.s6.footer", { email: CONTACT_EMAIL })}</Body>
                 </Section>
 
-                <Section title="7. Children's Privacy">
-                    <Body>
-                        {`${APP_NAME} is not directed to individuals under the age of 13. We do not knowingly collect personal information from children. If we become aware that a child under 13 has provided us with personal information, we will take steps to delete such information.`}
-                    </Body>
+                <Section title={t("privacy.s7.title")}>
+                    <Body>{t("privacy.s7.body", { app: APP_NAME })}</Body>
                 </Section>
 
-                <Section title="8. Third-Party Services">
-                    <Body>
-                        {`Our app uses Google Firebase for authentication and data storage. These third-party services have their own privacy policies, and we encourage you to review them. We are not responsible for the privacy practices of these services.`}
-                    </Body>
+                <Section title={t("privacy.s8.title")}>
+                    <Body>{t("privacy.s8.body")}</Body>
                 </Section>
 
-                <Section title="9. Changes to This Policy">
-                    <Body>
-                        {`We may update this Privacy Policy from time to time. We will notify you of any significant changes by updating the "Last updated" date at the top of this page. Your continued use of the app after changes constitutes acceptance of the revised policy.`}
-                    </Body>
+                <Section title={t("privacy.s9.title")}>
+                    <Body>{t("privacy.s9.body")}</Body>
                 </Section>
 
-                <Section title="10. Contact Us">
-                    <Body>{`If you have any questions or concerns about this Privacy Policy, please contact us at:\n\nEmail: ${CONTACT_EMAIL}\n\nWe aim to respond to all inquiries as fast as possible.`}</Body>
+                <Section title={t("privacy.s10.title")}>
+                    <Body>{t("privacy.s10.body", { email: CONTACT_EMAIL })}</Body>
                 </Section>
 
                 <View style={{ height: 40 }} />

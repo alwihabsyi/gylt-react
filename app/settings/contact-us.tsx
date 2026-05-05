@@ -1,5 +1,6 @@
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -44,6 +45,7 @@ function ContactCard({ icon, title, subtitle, onPress }: ContactCardProps) {
 
 export default function ContactUsScreen() {
     const colors = useSemanticColors();
+    const { t } = useTranslation();
     const router = useRouter();
     const [subject, setSubject] = useState("");
     const [message, setMessage] = useState("");
@@ -55,7 +57,7 @@ export default function ContactUsScreen() {
 
     const handleSendMessage = async () => {
         if (!subject.trim() || !message.trim()) {
-            Alert.alert("Missing fields", "Please fill in both subject and message.");
+            Alert.alert(t("contact.missingTitle"), t("contact.missingMessage"));
             return;
         }
         setSending(true);
@@ -64,7 +66,7 @@ export default function ContactUsScreen() {
         if (supported) {
             await Linking.openURL(mailUrl);
         } else {
-            Alert.alert("No mail app", `Please email us directly at ${CONTACT_EMAIL}`);
+            Alert.alert(t("contact.noMailTitle"), t("contact.noMailMessage", { email: CONTACT_EMAIL }));
         }
         setSending(false);
     };
@@ -82,7 +84,9 @@ export default function ContactUsScreen() {
                     >
                         <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
                     </TouchableOpacity>
-                    <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Contact Us</Text>
+                    <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+                        {t("contact.title")}
+                    </Text>
                     <View style={{ width: 40 }} />
                 </View>
 
@@ -94,24 +98,28 @@ export default function ContactUsScreen() {
                     <View style={[styles.introCard, { backgroundColor: `${Palette.EmeraldGreen}10` }]}>
                         <Ionicons name="headset-outline" size={32} color={Palette.EmeraldGreen} />
                         <Text style={[styles.introTitle, { color: colors.textPrimary }]}>
-                            {"We're here to help"}
+                            {t("contact.introTitle")}
                         </Text>
                         <Text style={[styles.introBody, { color: colors.textSecondary }]}>
-                            {"Have a question or feedback? Reach out to us and we'll get back to you as fast as possible."}
+                            {t("contact.introBody")}
                         </Text>
                     </View>
 
-                    <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>REACH OUT DIRECTLY</Text>
+                    <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>
+                        {t("contact.sectionDirect")}
+                    </Text>
                     <View style={[styles.card, { backgroundColor: colors.surface }]}>
                         <ContactCard
                             icon="mail-outline"
-                            title="Email Support"
+                            title={t("contact.emailSupport")}
                             subtitle={CONTACT_EMAIL}
                             onPress={handleEmailPress}
                         />
                     </View>
 
-                    <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>SEND A MESSAGE</Text>
+                    <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>
+                        {t("contact.sectionMessage")}
+                    </Text>
                     <View style={[styles.card, { backgroundColor: colors.surface }]}>
                         <View style={styles.field}>
                             <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>Subject</Text>
@@ -125,12 +133,14 @@ export default function ContactUsScreen() {
                         </View>
                         <View style={[styles.divider, { backgroundColor: colors.divider }]} />
                         <View style={styles.field}>
-                            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>Message</Text>
+                            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+                                {t("contact.message")}
+                            </Text>
                             <TextInput
                                 style={[styles.input, styles.messageInput, { color: colors.textPrimary }]}
                                 value={message}
                                 onChangeText={setMessage}
-                                placeholder="Tell us how we can help…"
+                                placeholder={t("contact.messagePlaceholder")}
                                 placeholderTextColor={colors.textPlaceholderAlt}
                                 multiline
                                 textAlignVertical="top"
@@ -146,14 +156,14 @@ export default function ContactUsScreen() {
                     >
                         <Ionicons name="send-outline" size={18} color={colors.inverseOnAccent} />
                         <Text style={[styles.sendBtnText, { color: colors.inverseOnAccent }]}>
-                            {sending ? "Opening mail…" : "Send Message"}
+                            {sending ? t("contact.openingMail") : t("contact.send")}
                         </Text>
                     </TouchableOpacity>
 
                     <View style={styles.noticeRow}>
                         <Ionicons name="time-outline" size={14} color={colors.textMuted} />
                         <Text style={[styles.noticeText, { color: colors.textMuted }]}>
-                            We typically respond within a few minutes or hours.
+                            {t("contact.notice")}
                         </Text>
                     </View>
 

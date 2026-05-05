@@ -5,7 +5,8 @@ import { parseFormattedDate } from "@/utils/formatter";
 import { StyleSheet, Text, View } from "react-native";
 
 import { MonthFilter } from "@/components/finance/month-filter-chip";
-import { MONTHS } from "@/constants/constants";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { TranslationKey } from "@/locales";
 
 const BAR_H = 110;
 
@@ -27,12 +28,18 @@ type Props = {
 
 export default function AnalyticsBarChart({ items, anchor }: Props) {
   const colors = useSemanticColors();
+  const { t } = useTranslation();
   const baseMonth = anchor.month ?? 11; // default "All months" to December of the selected year
   const baseYear = anchor.year;
 
   const months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(baseYear, baseMonth - 5 + i, 1);
-    return { month: d.getMonth(), year: d.getFullYear(), label: MONTHS[d.getMonth()] };
+    const mi = d.getMonth();
+    return {
+      month: mi,
+      year: d.getFullYear(),
+      label: t(`months.short.${mi}` as TranslationKey),
+    };
   });
 
   const data = months.map(({ month, year, label }) => {
@@ -47,17 +54,21 @@ export default function AnalyticsBarChart({ items, anchor }: Props) {
 
   return (
     <View style={[s.card, { backgroundColor: colors.surface, shadowColor: colors.shadow }]}>
-      <Text style={[s.title, { color: colors.textPrimary }]}>6-Month Overview</Text>
+      <Text style={[s.title, { color: colors.textPrimary }]}>{t("analytics.chartTitle")}</Text>
 
       <View style={s.legend}>
         <View style={s.legendItem}>
           <View style={[s.dot, { backgroundColor: Palette.EmeraldGreen }]} />
-          <Text style={[s.legendText, { color: colors.textMuted }]}>Income</Text>
+          <Text style={[s.legendText, { color: colors.textMuted }]}>
+            {t("analytics.legendIncome")}
+          </Text>
         </View>
 
         <View style={s.legendItem}>
           <View style={[s.dot, { backgroundColor: Palette.PoppyRed }]} />
-          <Text style={[s.legendText, { color: colors.textMuted }]}>Expense</Text>
+          <Text style={[s.legendText, { color: colors.textMuted }]}>
+            {t("analytics.legendExpense")}
+          </Text>
         </View>
       </View>
 

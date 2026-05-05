@@ -1,9 +1,18 @@
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { TranslationKey } from "@/locales";
 import { formattedIntervalTarget, goalProgress, Goals } from "@/domain/Goals";
+import { GoalInterval } from "@/types/goal";
 import { getGoalDuration, parseFormattedDate } from "@/utils/formatter";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
+const INTERVAL_LABEL: Record<GoalInterval, TranslationKey> = {
+  [GoalInterval.Weekly]: "interval.weekly",
+  [GoalInterval.Monthly]: "interval.monthly",
+  [GoalInterval.Annually]: "interval.annually",
+};
 
 type GoalCardProps = {
   goals: Goals;
@@ -12,6 +21,7 @@ type GoalCardProps = {
 
 export function GoalCard({ goals, onPress }: GoalCardProps) {
   const colors = useSemanticColors();
+  const { t } = useTranslation();
   const progress = goalProgress(goals);
   const targetDate = parseFormattedDate(goals.targetDate);
   const createdAt = parseFormattedDate(goals.createdAt);
@@ -36,7 +46,7 @@ export function GoalCard({ goals, onPress }: GoalCardProps) {
             {goals.name}
           </Text>
           <Text style={[styles.targetDate, { color: colors.textSecondary }]}>
-            Target: {goals.targetDate}
+            {t("goalCard.targetLabel", { date: goals.targetDate })}
           </Text>
         </View>
 
@@ -51,9 +61,9 @@ export function GoalCard({ goals, onPress }: GoalCardProps) {
         <View style={styles.statsRow}>
           <View style={[styles.statBox, { backgroundColor: colors.surfaceInset }]}>
             <Text style={[styles.statLabel, { color: colors.textMuted }]} numberOfLines={1}>
-              {goals.intervalType.charAt(0).toUpperCase() +
-                goals.intervalType.slice(1)}{" "}
-              Target
+              {t("goalCard.intervalTarget", {
+                interval: t(INTERVAL_LABEL[goals.intervalType]),
+              })}
             </Text>
             <Text style={[styles.statValue, { color: colors.textPrimary }]} numberOfLines={1}>
               {formattedIntervalTarget(goals)}
@@ -61,7 +71,9 @@ export function GoalCard({ goals, onPress }: GoalCardProps) {
           </View>
 
           <View style={[styles.statBox, { backgroundColor: colors.surfaceInset }]}>
-            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Time Left</Text>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>
+              {t("goalDetail.timeLeft")}
+            </Text>
             <Text style={[styles.statValue, { color: colors.textPrimary }]} numberOfLines={1}>
               {createdAt && targetDate
                 ? getGoalDuration(createdAt, targetDate, goals.intervalType)

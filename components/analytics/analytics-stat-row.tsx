@@ -1,5 +1,6 @@
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
 import { formatCurrency } from "@/utils/formatter";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
@@ -43,16 +44,30 @@ type Props = {
 };
 
 export default function AnalyticsStatRow({ income, expense, incomeDelta, expenseDelta }: Props) {
+    const { t } = useTranslation();
+
+    const formatDeltaPct = (delta: string | null | undefined) => {
+        if (!delta) return null;
+        const value = `${Number(delta) >= 0 ? "+" : ""}${delta}`;
+        return t("analytics.statDelta", { value });
+    };
+
     return (
         <View style={s.row}>
             <StatCard
-                label="Income" value={income} delta={incomeDelta ? `${Number(incomeDelta) >= 0 ? "+" : ""}${incomeDelta}% vs last mo.` : null}
-                color={Palette.EmeraldGreen} icon="arrow-down-circle-outline"
+                label={t("analytics.statIncome")}
+                value={income}
+                delta={formatDeltaPct(incomeDelta)}
+                color={Palette.EmeraldGreen}
+                icon="arrow-down-circle-outline"
             />
             <View style={{ width: 12 }} />
             <StatCard
-                label="Expenses" value={expense} delta={expenseDelta ? `${Number(expenseDelta) >= 0 ? "+" : ""}${expenseDelta}% vs last mo.` : null}
-                color={Palette.PoppyRed} icon="arrow-up-circle-outline"
+                label={t("analytics.statExpenses")}
+                value={expense}
+                delta={formatDeltaPct(expenseDelta)}
+                color={Palette.PoppyRed}
+                icon="arrow-up-circle-outline"
             />
         </View>
     );

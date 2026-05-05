@@ -5,6 +5,7 @@ import { GoalCard } from "@/components/ui/goal-card";
 import { AppRoutes } from "@/constants/routes";
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Goals } from "@/domain/Goals";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchGoals } from "@/store/slices/goalSlice";
@@ -24,9 +25,10 @@ type GoalsContentProps = {
 
 function GoalsContent({ goals, loading, error, refreshControl }: GoalsContentProps) {
   const router = useRouter();
+  const { t } = useTranslation();
 
-  if (loading) return <GlobalLoading label="Loading your goals…" />;
-  if (error) return <GlobalError title="Something went wrong" message={error} />;
+  if (loading) return <GlobalLoading label={t("goals.loadingGoals")} />;
+  if (error) return <GlobalError title={t("common.errorTitle")} message={error} />;
 
   if (goals.length === 0) {
     return (
@@ -37,9 +39,9 @@ function GoalsContent({ goals, loading, error, refreshControl }: GoalsContentPro
       >
         <GlobalEmptyState
           icon="🧾"
-          title="No goals yet"
-          message="Add your first goal to see it here."
-          actionLabel="Add a goal"
+          title={t("goals.noGoalsTitle")}
+          message={t("goals.noGoalsMessage")}
+          actionLabel={t("goals.addGoal")}
           onAction={() => router.push(AppRoutes.AddGoal)}
         />
       </ScrollView>

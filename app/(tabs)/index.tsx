@@ -10,6 +10,7 @@ import GlobalLoading from "@/components/ui/global-loading";
 import { AppRoutes } from "@/constants/routes";
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchActivities } from "@/store/slices/activitySlice";
 import { Activity } from "@/types/activity";
@@ -18,6 +19,7 @@ import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
   const colors = useSemanticColors();
+  const { t } = useTranslation();
   const router = useRouter();
   const { userId, fullName } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
@@ -67,15 +69,15 @@ export default function HomeScreen() {
   );
 
   const bodyContent = loading && !refreshing ? (
-    <GlobalLoading label="Loading your transactions…" />
+    <GlobalLoading label={t("finance.loadingTransactions")} />
   ) : error ? (
-    <GlobalError title="Something went wrong" message={error} />
+    <GlobalError title={t("common.errorTitle")} message={error} />
   ) : (
     <GlobalEmptyState
       icon="🧾"
-      title="No transactions yet"
-      message="Add your first transaction to see your summary here."
-      actionLabel="Add transaction"
+      title={t("finance.noTransactionsTitle")}
+      message={t("finance.noTransactionsMessage")}
+      actionLabel={t("finance.addTransaction")}
       onAction={() => router.push(AppRoutes.AddTransaction)}
     />
   );

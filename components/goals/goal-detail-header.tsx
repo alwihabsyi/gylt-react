@@ -1,5 +1,6 @@
 import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
+import { useTranslation } from "@/hooks/useTranslation";
 import { GoalType } from "@/types/goal";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -12,6 +13,11 @@ type Props = {
 
 export function GoalDetailHeader({ name, goalType, onBack }: Props) {
   const colors = useSemanticColors();
+  const { t } = useTranslation();
+  const subtitle =
+    goalType === GoalType.Financial
+      ? t("goalDetail.financialGoalDisplay")
+      : t("goalDetail.wellbeingGoalDisplay");
   return (
     <View style={styles.header}>
       <TouchableOpacity
@@ -28,7 +34,7 @@ export function GoalDetailHeader({ name, goalType, onBack }: Props) {
           {name}
         </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          {goalType === GoalType.Financial ? "Financial" : "Well-Being"} Goal
+          {subtitle}
         </Text>
       </View>
     </View>

@@ -1,5 +1,10 @@
+import { AppRoutes } from "@/constants/routes";
+import { Palette } from "@/constants/theme";
 import { useSemanticColors } from "@/hooks/use-semantic-colors";
-import { useAppSelector } from "@/store/hooks";
+import { useTranslation } from "@/hooks/useTranslation";
+import type { TranslationKey } from "@/locales";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { deleteAccount } from "@/store/slices/authSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -18,33 +23,47 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const CONFIRM_PHRASE = "DELETE";
 
+const DELETE_ITEM_KEYS = [
+    "deleteAccount.item1",
+    "deleteAccount.item2",
+    "deleteAccount.item3",
+    "deleteAccount.item4",
+] as const satisfies readonly TranslationKey[];
+
 export default function DeleteAccountScreen() {
     const colors = useSemanticColors();
+    const { t } = useTranslation();
     const router = useRouter();
     const { email } = useAppSelector((state) => state.auth);
+    const dispatch = useAppDispatch();
 
     const [password, setPassword] = useState("");
     const [confirmText, setConfirmText] = useState("");
     const [deleting, setDeleting] = useState(false);
+    const [error, setError] = useState("");
 
     const canDelete = confirmText === CONFIRM_PHRASE && password.length > 0;
 
     const handleDelete = () => {
-        if (!canDelete) return;
-        Alert.alert(
-            "Final Confirmation",
-            "This action is permanent and cannot be undone. All your data will be deleted immediately.",
-            [
-                { text: "Cancel", style: "cancel" },
-                {
-                    text: "Delete My Account",
-                    style: "destructive",
-                    onPress: async () => {
-                        setDeleting(true);
+        if (!canDelete || !email) return;
+        Alert.alert(t("deleteAccount.finalTitle"), t("deleteAccount.finalMessage"), [
+            { text: t("deleteAccount.finalCancel"), style: "cancel" },
+            {
+                text: t("deleteAccount.finalConfirm"),
+                style: "destructive",
+                onPress: async () => {
+                    setDeleting(true);
+                    const result = await dispatch(deleteAccount(password))
+                    if (deleteAccount.fulfilled.match(result)) {
                         setDeleting(false);
-                    },
+                        router.push(AppRoutes.SignIn)
+                    } else if (deleteAccount.rejected.match(result)) {
+                        setError(result.error.message ?? t('common.errorTitle'))
+                        setDeleting(false)
+                    }
                 },
-            ],
+            },
+        ],
         );
     };
 
@@ -61,7 +80,9 @@ export default function DeleteAccountScreen() {
                     >
                         <Ionicons name="arrow-back" size={22} color={colors.textPrimary} />
                     </TouchableOpacity>
-                    <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Delete Account</Text>
+                    <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+                        {t("deleteAccount.title")}
+                    </Text>
                     <View style={{ width: 40 }} />
                 </View>
 
@@ -81,27 +102,22 @@ export default function DeleteAccountScreen() {
                     >
                         <Ionicons name="warning-outline" size={32} color={colors.danger} />
                         <Text style={[styles.warningTitle, { color: colors.danger }]}>
-                            This cannot be undone
+                            {t("deleteAccount.warningTitle")}
                         </Text>
                         <Text style={[styles.warningBody, { color: colors.textSecondary }]}>
-                            Deleting your account will permanently erase all your transactions, goals, and personal data from our servers.
+                            {t("deleteAccount.warningBody")}
                         </Text>
                     </View>
 
                     <View style={[styles.card, { backgroundColor: colors.surface }]}>
                         <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>
-                            What will be deleted
+                            {t("deleteAccount.whatTitle")}
                         </Text>
-                        {[
-                            "Your profile and account credentials",
-                            "All financial transactions and history",
-                            "All goals and progress data",
-                            "Your preferences and settings",
-                        ].map((item) => (
-                            <View key={item} style={styles.deleteItem}>
+                        {DELETE_ITEM_KEYS.map((key) => (
+                            <View key={key} style={styles.deleteItem}>
                                 <Ionicons name="close-circle-outline" size={18} color={colors.danger} />
                                 <Text style={[styles.deleteItemText, { color: colors.textSecondary }]}>
-                                    {item}
+                                    {t(key)}
                                 </Text>
                             </View>
                         ))}
@@ -109,16 +125,18 @@ export default function DeleteAccountScreen() {
 
                     <View style={[styles.card, { backgroundColor: colors.surface }]}>
                         <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>
-                            Confirm deletion
+                            {t("deleteAccount.confirmTitle")}
                         </Text>
 
                         <View style={styles.field}>
-                            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>Your password</Text>
+                            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+                                {t("deleteAccount.password")}
+                            </Text>
                             <TextInput
                                 style={[styles.input, { color: colors.textPrimary }]}
                                 value={password}
                                 onChangeText={setPassword}
-                                placeholder="Enter your current password"
+                                placeholder={t("deleteAccount.passwordPlaceholder")}
                                 placeholderTextColor={colors.textPlaceholderAlt}
                                 secureTextEntry
                             />
@@ -128,13 +146,13 @@ export default function DeleteAccountScreen() {
 
                         <View style={styles.field}>
                             <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
-                                Type <Text style={[styles.confirmPhrase, { color: colors.danger }]}>{CONFIRM_PHRASE}</Text> to confirm
+                                {t("deleteAccount.typePhrase", { phrase: CONFIRM_PHRASE })}
                             </Text>
                             <TextInput
                                 style={[styles.input, { color: colors.textPrimary }]}
                                 value={confirmText}
                                 onChangeText={setConfirmText}
-                                placeholder={`Type ${CONFIRM_PHRASE} here`}
+                                placeholder={t("deleteAccount.typePlaceholder", { phrase: CONFIRM_PHRASE })}
                                 placeholderTextColor={colors.textPlaceholderAlt}
                                 autoCapitalize="characters"
                             />
@@ -145,10 +163,12 @@ export default function DeleteAccountScreen() {
                         <View style={styles.emailRow}>
                             <Ionicons name="person-outline" size={14} color={colors.textMuted} />
                             <Text style={[styles.emailText, { color: colors.textMuted }]}>
-                                Logged in as {email}
+                                {t("deleteAccount.loggedInAs", { email })}
                             </Text>
                         </View>
                     )}
+
+                    {error && <Text style={styles.errorText}>{error}</Text>}
 
                     <TouchableOpacity
                         style={[
@@ -162,7 +182,7 @@ export default function DeleteAccountScreen() {
                     >
                         <Ionicons name="trash-outline" size={18} color={colors.inverseOnAccent} />
                         <Text style={[styles.deleteBtnText, { color: colors.inverseOnAccent }]}>
-                            {deleting ? "Deleting…" : "Delete My Account"}
+                            {deleting ? t("deleteAccount.deleting") : t("deleteAccount.submit")}
                         </Text>
                     </TouchableOpacity>
 
@@ -172,7 +192,7 @@ export default function DeleteAccountScreen() {
                         activeOpacity={0.75}
                     >
                         <Text style={[styles.cancelBtnText, { color: colors.textPrimary }]}>
-                            Keep My Account
+                            {t("deleteAccount.keepAccount")}
                         </Text>
                     </TouchableOpacity>
 
@@ -248,4 +268,10 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     cancelBtnText: { fontSize: 16, fontWeight: "600" },
+    errorText: {
+        color: Palette .RedErrorLight,
+        fontSize: 13,
+        marginBottom: 8,
+        textAlign: "center",
+    },
 });
